@@ -1,0 +1,20 @@
+{
+  "name": "snapmesh-mesh-compute",
+  "version": "0.1.0",
+  "description": "M2 — calcul distribué SnapMesh : opérations sûres, file, ordonnanceurs déterministes, TASK/RESULT, vérification.",
+  "main": "src/compute.js",
+  "bin": {
+    "snapmesh-compute-node": "./bin/compute-node.js"
+  },
+  "scripts": {
+    "test": "node --test test/"
+  },
+  "dependencies": {
+    "snapmesh-mesh-net": "file:../mesh-net",
+    "snapmesh-mesh-flux": "file:../mesh-flux"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "license": "MIT"
+}

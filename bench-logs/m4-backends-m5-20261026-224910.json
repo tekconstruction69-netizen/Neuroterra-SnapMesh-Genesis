@@ -1,0 +1,98 @@
+{
+  "module": "M4-backends",
+  "date": "2026-10-26T21:49:30.442Z",
+  "node": "v24.14.0",
+  "ort": "1.31.1",
+  "eps": {
+    "cpu": {
+      "available": true,
+      "ms": 70.5084
+    },
+    "dml": {
+      "available": true,
+      "ms": 173.1352
+    },
+    "cuda": {
+      "available": false,
+      "reason": "no available backend found. ERR: [cuda] backend not found."
+    }
+  },
+  "reps": 5,
+  "limites": "CPU Ryzen 7 7435HS, iGPU via DirectML ; cuda absent ; réseau non mesuré",
+  "resultats": {
+    "16": {
+      "n": 16,
+      "bras": {
+        "A": {
+          "backend": "node-cpu-fp32 (JS)",
+          "ms": {
+            "n": 5,
+            "min": 0.0168,
+            "med": 0.0356,
+            "max": 0.1386,
+            "mean": 0.06636
+          }
+        },
+        "B": {
+          "backend": "ort-cpu",
+          "ms": {
+            "n": 5,
+            "min": 0.0908,
+            "med": 0.1,
+            "max": 0.1311,
+            "mean": 0.10899999999999999
+          },
+          "erreurMax": 0
+        },
+        "C": {
+          "backend": "ort-dml",
+          "ms": {
+            "n": 5,
+            "min": 0.3525,
+            "med": 0.6258,
+            "max": 1.5142,
+            "mean": 0.73712
+          },
+          "erreurMax": 0
+        }
+      }
+    },
+    "64": {
+      "n": 64,
+      "bras": {
+        "A": {
+          "backend": "node-cpu-fp32 (JS)",
+          "ms": {
+            "n": 5,
+            "min": 0.6154,
+            "med": 0.7884,
+            "max": 0.8012,
+            "mean": 0.75674
+          }
+        },
+        "B": {
+          "backend": "ort-cpu",
+          "ms": {
+            "n": 5,
+            "min": 0.083,
+            "med": 0.1424,
+            "max": 0.3755,
+            "mean": 0.20048
+          },
+          "erreurMax": 0
+        },
+        "C": {
+          "backend": "ort-dml",
+          "ms": {
+            "n": 5,
+            "min": 0.3816,
+            "med": 0.4358,
+            "max": 0.9908,
+            "mean": 0.5698000000000001
+          },
+          "erreurMax": 0
+        }
+      }
+    }
+  }
+}

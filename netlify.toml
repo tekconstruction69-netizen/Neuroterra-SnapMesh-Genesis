@@ -1,0 +1,15 @@
+# Netlify — static control-UI demo ONLY.
+# Publishes mesh-app/public (no server, no workers, no local ports,
+# no admin API). The page's /api calls have no backend on Netlify and
+# degrade in the UI; run `node mesh-app/server.js` locally for the
+# full loopback application. No secrets are required or exposed here.
+
+[build]
+  publish = "mesh-app/public"
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "no-referrer"
+    X-Frame-Options = "DENY"

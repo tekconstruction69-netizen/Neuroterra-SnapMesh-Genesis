@@ -1,0 +1,35 @@
+:root { color-scheme: light; }
+* { box-sizing: border-box; }
+body {
+  margin: 0; padding: 1rem;
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  background: #f2f4f1; color: #1c2420; line-height: 1.5;
+}
+main { max-width: 560px; margin: 0 auto; }
+h1 { font-size: 1.5rem; margin: 0.5rem 0 0; }
+.subtitle { margin: 0 0 1rem; color: #33413a; }
+.panel {
+  background: #fff; border: 1px solid #d5dcd6;
+  border-radius: 10px; padding: 1rem; margin-bottom: 1rem;
+}
+.panel h2 { font-size: 1.05rem; margin: 0 0 0.5rem; }
+.state { font-size: 1.25rem; font-weight: 700; }
+.reason { min-height: 1.5em; color: #33413a; }
+button.big {
+  display: block; width: 100%; padding: 1rem; font-size: 1.3rem; font-weight: 800;
+  letter-spacing: 0.04em; color: #fff; background: #1d6b38;
+  border: none; border-radius: 8px; cursor: pointer;
+}
+button.big.stop { background: #a4262c; }
+button.big:disabled { opacity: 0.5; cursor: wait; }
+.consent { display: block; margin: 0.75rem 0; font-size: 0.95rem; }
+.modes { display: flex; gap: 0.5rem; }
+.modes button { flex: 1; padding: 0.6rem 0.25rem; border: 1px solid #9aa79e; background: #eef1ee; border-radius: 6px; cursor: pointer; }
+.modes button.on { background: #1d4d2b; color: #fff; border-color: #1d4d2b; }
+.note { font-size: 0.85rem; color: #33413a; }
+dl#res { margin: 0; }
+dl#res > div { display: flex; justify-content: space-between; padding: 0.25rem 0; border-bottom: 1px dotted #d5dcd6; }
+dl#res dt { font-weight: 600; }
+ul { margin: 0.25rem 0; padding-left: 1.25rem; }
+li { margin-bottom: 0.25rem; }
+@media (prefers-reduced-motion: reduce) { * { transition: none; } }

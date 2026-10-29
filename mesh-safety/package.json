@@ -1,0 +1,13 @@
+{
+  "name": "snapmesh-mesh-safety",
+  "version": "0.1.0",
+  "description": "M2-SAFETY — contrôleur de sécurité matérielle : budgets, workers, thermique, STOP prioritaire. Zéro dépendance.",
+  "main": "src/controller.js",
+  "scripts": {
+    "test": "node --test test/unit.test.js test/hardware.test.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "license": "MIT"
+}

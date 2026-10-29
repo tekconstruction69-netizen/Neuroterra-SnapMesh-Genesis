@@ -1,0 +1,13 @@
+{
+  "name": "snapmesh-nt-pq",
+  "version": "0.1.0",
+  "description": "NT-PQ : session hybride X25519 + ML-KEM-768, signatures ML-DSA-65, anti-rejeu, rotation/revocation (node:crypto eprouve).",
+  "type": "commonjs",
+  "main": "src/hybrid.js",
+  "scripts": {
+    "test": "node --test --test-timeout=60000 test/unit.test.js"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

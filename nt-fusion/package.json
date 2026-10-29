@@ -1,0 +1,13 @@
+{
+  "name": "snapmesh-nt-fusion",
+  "version": "0.1.0",
+  "description": "NT-FUSION : graphe de calcul type, planificateur deterministe, executant reel, planificateur Muse + arbitre.",
+  "type": "commonjs",
+  "main": "src/planner.js",
+  "scripts": {
+    "test": "node --test --test-timeout=60000 test/unit.test.js"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

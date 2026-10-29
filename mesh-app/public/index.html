@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SnapMesh — Contribuer en sécurité</title>
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#1d4d2b">
+<link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+<main>
+  <h1>SnapMesh Genesis</h1>
+  <p class="subtitle">Contribuez au calcul partagé, dans vos limites.</p>
+
+  <section class="panel" aria-label="Contrôle">
+    <div class="state" id="state">État : arrêté</div>
+    <p class="reason" id="reason"></p>
+    <button id="toggle" class="big">DÉMARRER</button>
+    <label class="consent"><input type="checkbox" id="consent"> Je consens à partager mes ressources dans les limites ci-dessous.</label>
+    <div class="modes" role="group" aria-label="Mode">
+      <button data-mode="eco">Éco (1 %)</button>
+      <button data-mode="balanced" class="on">Équilibré (5 %)</button>
+      <button data-mode="performance">Performance (10 %)</button>
+    </div>
+    <p class="note">Objectifs de service coopératifs, pas des plafonds matériels. Aucun revenu promis.</p>
+  </section>
+
+  <section class="panel" aria-label="Ressources">
+    <h2>Ressources mesurées</h2>
+    <dl id="res">
+      <div><dt>CPU mesuré</dt><dd id="r-cpu">—</dd></div>
+      <div><dt>Mémoire libre</dt><dd id="r-mem">—</dd></div>
+      <div><dt>Tâches actives</dt><dd id="r-tasks">—</dd></div>
+      <div><dt>Thermique</dt><dd id="r-th">—</dd></div>
+    </dl>
+  </section>
+
+  <section class="panel" aria-label="Profil">
+    <h2>Profil NT-ID</h2>
+    <dl id="profile">
+      <div><dt>Identifiant</dt><dd id="p-id">—</dd></div>
+      <div><dt>Nom</dt><dd id="p-name">—</dd></div>
+      <div><dt>Placement autorisé</dt><dd id="p-brake">—</dd></div>
+    </dl>
+  </section>
+
+  <section class="panel" aria-label="Capacités">
+    <h2>Capacités NT-CAP</h2>
+    <div id="caps-self">—</div>
+    <ul id="caps-peers"><li>Aucun pour l'instant.</li></ul>
+  </section>
+
+  <section class="panel" aria-label="Réseau">
+    <h2>Nœuds connectés (<span id="n-count">0</span>)</h2>
+    <ul id="peers"><li>Aucun pour l'instant.</li></ul>
+    <svg id="graph" width="100%" height="160" role="img" aria-label="Graphe du réseau"></svg>
+  </section>
+
+  <section class="panel" aria-label="Tâche">
+    <h2>Soumettre un calcul vérifié</h2>
+    <label>Preset
+      <select id="job-preset">
+        <option value="batch-fib">Lot de Fibonacci (parallèle)</option>
+        <option value="split-wordcount">Comptage de mots (découpé)</option>
+        <option value="chain-matmul">Chaîne de produits matriciels</option>
+      </select>
+    </label>
+    <label>Paramètres (JSON)
+      <textarea id="job-params" rows="3">{"ns": [20, 25]}</textarea>
+    </label>
+    <button id="job-run">EXÉCUTER</button>
+    <p class="reason" id="job-status"></p>
+    <div id="job-out">—</div>
+  </section>
+
+  <section class="panel" aria-label="Résultats">
+    <h2>Résultats vérifiés</h2>
+    <ul id="results"><li>Aucun pour l'instant.</li></ul>
+  </section>
+</main>
+<script>window.__GENESIS_TOKEN__ = "__GENESIS_TOKEN__";</script>
+<script src="/app.js"></script>
+</body>
+</html>

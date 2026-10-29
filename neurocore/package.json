@@ -1,0 +1,13 @@
+{
+  "name": "snapmesh-neurocore",
+  "version": "0.1.0",
+  "description": "NeuroCore : orchestrateur autonome (NT-COST, NT-LEARN, NT-RECOMPOSE, NT-FLOW, NT-SURVIVE). Aucun appel Muse au runtime.",
+  "type": "commonjs",
+  "main": "src/flow.js",
+  "scripts": {
+    "test": "node --test --test-timeout=60000 test/unit.test.js"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

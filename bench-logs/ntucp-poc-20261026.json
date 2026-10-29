@@ -1,0 +1,100 @@
+{
+  "module": "NT-UCP PoC",
+  "date": "2026-10-26T19:52:54.129Z",
+  "node": "v24.14.0",
+  "reps": 3,
+  "limites": "2 profils logiciels sur cette machine (pas 2 appareils) ; fil simulé ; Muse live non appelé ; safety = budgets déclarés",
+  "negocié": {
+    "protocol": "fusion-ir/1",
+    "dtype": "fp32",
+    "codec": "gzip",
+    "crypto": "x25519",
+    "backends": [
+      "node-cpu-fp64",
+      "node-cpu-fp32",
+      "node-cpu-int8"
+    ]
+  },
+  "surcoûts": {
+    "cryptoCertMs": 3.0539,
+    "negociationMs": 1.3047,
+    "negociationOctets": 2353,
+    "conversionsVoirBras": true
+  },
+  "bras": {
+    "mono (local)": {
+      "reussite": "3/3",
+      "tempsMs": {
+        "n": 3,
+        "min": 0.454,
+        "med": 0.6357,
+        "max": 0.8538,
+        "mean": 0.6478333333333334
+      },
+      "conversionMs": 0.0728,
+      "transfertsOctets": 0,
+      "transfertsFluxOctets": 0,
+      "tPackMs": 0,
+      "placements": {
+        "tous": "local"
+      }
+    },
+    "greedy hétérogène": {
+      "reussite": "3/3",
+      "tempsMs": {
+        "n": 3,
+        "min": 0.2794,
+        "med": 0.2807,
+        "max": 0.2823,
+        "mean": 0.2808
+      },
+      "conversionMs": 0.0816,
+      "transfertsOctets": 2304,
+      "transfertsFluxOctets": 2304,
+      "tPackMs": 1.9426,
+      "placements": {
+        "mm": "wB",
+        "A": "wB",
+        "B": "wB",
+        "qi": "wA",
+        "mm2": "wA",
+        "C": "wA",
+        "qf": "wA",
+        "out": "wA",
+        "D": "wA"
+      }
+    },
+    "muse-repli": {
+      "reussite": "3/3",
+      "tempsMs": {
+        "n": 3,
+        "min": 0.2291,
+        "med": 0.2876,
+        "max": 0.3748,
+        "mean": 0.2971666666666667
+      },
+      "conversionMs": 0.0472,
+      "transfertsOctets": 2304,
+      "transfertsFluxOctets": 2304,
+      "tPackMs": 0.7007,
+      "placements": {
+        "mm": "wB",
+        "A": "wB",
+        "B": "wB",
+        "qi": "wA",
+        "mm2": "wA",
+        "C": "wA",
+        "qf": "wA",
+        "out": "wA",
+        "D": "wA"
+      }
+    }
+  },
+  "erreurMaxVsOracle": 40.1473388671875,
+  "picOracle": 2874,
+  "erreurRelative": 0.013969150614887788,
+  "registre": {
+    "ok": true,
+    "checked": 3
+  }
+}

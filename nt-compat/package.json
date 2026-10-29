@@ -1,0 +1,16 @@
+{
+  "name": "snapmesh-nt-compat",
+  "version": "0.1.0",
+  "description": "NT-COMPAT : detection reelle des backends, registre de capacites versionne, validateur d'affectation, tenseurs fp32/int8.",
+  "type": "commonjs",
+  "main": "src/registry.js",
+  "scripts": {
+    "test": "node --test --test-timeout=60000 test/unit.test.js"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "optionalDependencies": {
+    "onnxruntime-node": "^1.31.1"
+  }
+}

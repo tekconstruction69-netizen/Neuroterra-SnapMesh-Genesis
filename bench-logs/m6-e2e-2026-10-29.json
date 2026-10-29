@@ -1,0 +1,57 @@
+{
+  "module": "M6-E2E",
+  "portee": "MEME HOTE, processus locaux — PAS multi-appareils",
+  "date": "2026-10-29T18:55:35.145Z",
+  "node": "v24.14.0",
+  "plateforme": "win32 x64",
+  "ort": "1.31.1",
+  "route": {
+    "chosen": {
+      "kind": "distribue",
+      "feasible": true,
+      "strategy": "nt-adapt-local",
+      "reason": "repli local : distribué 0.200 ms ne bat pas mono 0.210 ms d'au moins 5 %",
+      "estMs": 0.2099,
+      "transferBytes": 0,
+      "workers": [
+        "wA"
+      ]
+    },
+    "refusedDistribution": null
+  },
+  "epreuves": [
+    {
+      "worker": "wA",
+      "hash": "c6f64a5454f55ee8",
+      "matmulFp32Ms": 0.2355
+    },
+    {
+      "worker": "wB",
+      "hash": "16e9c94f87b192a5",
+      "matmulFp32Ms": 0.0898
+    }
+  ],
+  "execution": {
+    "nominal": "done",
+    "panneReprise": "done",
+    "doublonDeterministe": "d1ab1c5d37c3ec5d",
+    "replanJournalise": true
+  },
+  "inferenceORT": {
+    "n": 64,
+    "msMesure": 1.0895,
+    "accordVsJS": {
+      "ok": true,
+      "maxAbs": 0,
+      "maxRel": 0,
+      "worst": null,
+      "tol": {
+        "rtol": 0.0001,
+        "atol": 0.000001
+      }
+    }
+  },
+  "ramProcessusMo": 80.3,
+  "dureeTotaleMs": 1579,
+  "limites": "sockets/2 PC NON exécutés (sandbox EACCES) ; énergie/VRAM non mesurées ; cloud non appelé"
+}

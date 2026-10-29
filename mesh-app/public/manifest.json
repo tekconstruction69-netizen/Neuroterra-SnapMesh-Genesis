@@ -1,0 +1,11 @@
+{
+  "name": "SnapMesh Genesis",
+  "short_name": "SnapMesh",
+  "description": "Contribuer au calcul partagé dans vos limites.",
+  "lang": "fr",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f2f4f1",
+  "theme_color": "#1d4d2b",
+  "icons": []
+}

@@ -1,0 +1,13 @@
+2026-10-26T20:22:51.2587177+01:00 [demo] demarrage executant compute (48384)
+2026-10-26T20:22:51.3302497+01:00 [demo] demarrage app Genesis
+2026-10-26T20:22:51.9109235+01:00 [demo] app en ligne
+2026-10-26T20:22:51.9619159+01:00 [demo] START : ACTIVE
+2026-10-26T20:22:52.4864261+01:00 [demo] pair maille a session verifiee
+2026-10-26T20:22:52.4884295+01:00 [demo] soumission job batch-fib [20,25,30]
+2026-10-26T20:22:52.5489510+01:00 [demo] verdict : done valeur=6765,75025,832040
+2026-10-26T20:22:52.5529510+01:00 [demo] empreinte finale : 34b7f4bf4d1ecf1664f6ce134d1d7cceab3757927a593c9637c7f6a605fcec4b
+2026-10-26T20:22:52.5709548+01:00 [demo] fragments : fib-0=done fib-1=done fib-2=done
+2026-10-26T20:22:52.5969691+01:00 [demo] graphe : 2 noeud(s), 1 lien(s)
+2026-10-26T20:22:52.6029711+01:00 [demo] STOP : True
+2026-10-26T20:22:52.6059676+01:00 [demo] DEMO REUSSIE
+2026-10-26T20:22:52.6144899+01:00 [demo] processus nettoyes

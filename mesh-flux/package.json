@@ -1,0 +1,13 @@
+{
+  "name": "snapmesh-mesh-flux",
+  "version": "0.1.0",
+  "description": "NT-Flux : compression adaptative et déduplication optionnelles pour SnapMesh. Zéro dépendance (node:zlib).",
+  "main": "src/flux.js",
+  "scripts": {
+    "test": "node --test test/"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "license": "MIT"
+}

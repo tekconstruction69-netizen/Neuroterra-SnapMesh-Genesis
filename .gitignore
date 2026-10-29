@@ -1,0 +1,28 @@
+# Secrets and local credentials — never committed
+*.key
+*.pem
+*.pfx
+.env
+.env.*
+!/.env.example
+data-*.key
+
+# Dependencies and local environments
+node_modules/
+.venv/
+
+# Test and runtime artifacts
+*.log
+*.queue.json
+.tmp-*/
+mesh-net/test/.tmp*/
+mesh-compute/test/.tmp*/
+bench-logs/*.log
+
+# Netlify local state
+.netlify/
+
+# OS and editor noise
+Thumbs.db
+Desktop.ini
+.vscode/

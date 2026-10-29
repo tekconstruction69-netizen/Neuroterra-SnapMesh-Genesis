@@ -1,0 +1,13 @@
+{
+  "name": "snapmesh-nt-ucp",
+  "version": "0.1.0",
+  "description": "NT-UCP : manifeste NT-CERT signe, negociation authentifiee NT-NEGOTIATE, preuve de concept heterogene.",
+  "type": "commonjs",
+  "main": "src/negotiate.js",
+  "scripts": {
+    "test": "node --test --test-timeout=60000 test/unit.test.js"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

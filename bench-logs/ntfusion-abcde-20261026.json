@@ -1,0 +1,121 @@
+{
+  "module": "NT-FUSION",
+  "date": "2026-10-26T19:47:45.771Z",
+  "node": "v24.14.0",
+  "plateforme": "win32",
+  "reps": 5,
+  "limites": "workers = 2 registres de cette machine (processus locaux) ; transferts = octets comptés (fil réel : §5/e2e) ; Muse live non appelé (aucune clé)",
+  "bras": {
+    "A": {
+      "strategie": "1 worker local",
+      "tempsMs": {
+        "n": 5,
+        "min": 0.4258,
+        "med": 0.9576,
+        "max": 5.1016,
+        "mean": 1.9104800000000002
+      },
+      "reussite": "5/5",
+      "transfertsOctets": 0
+    },
+    "B": {
+      "strategie": "round-robin 2 workers",
+      "tempsMs": {
+        "n": 5,
+        "min": 0.3345,
+        "med": 0.3516,
+        "max": 0.4211,
+        "mean": 0.36044
+      },
+      "reussite": "5/5",
+      "transfertsOctets": 10240,
+      "placements": {
+        "mm": "w1",
+        "A": "w1",
+        "B": "w1",
+        "qi": "w2",
+        "mm2": "w1",
+        "C": "w1",
+        "qf": "w2",
+        "out": "w1",
+        "D": "w1"
+      }
+    },
+    "C": {
+      "strategie": "greedy capacités",
+      "tempsMs": {
+        "n": 5,
+        "min": 0.2944,
+        "med": 0.3199,
+        "max": 0.5626,
+        "mean": 0.36726000000000003
+      },
+      "reussite": "5/5",
+      "transfertsOctets": 0,
+      "placements": {
+        "mm": "w2",
+        "A": "w2",
+        "B": "w2",
+        "qi": "w2",
+        "mm2": "w2",
+        "C": "w2",
+        "qf": "w2",
+        "out": "w2",
+        "D": "w2"
+      }
+    },
+    "D": {
+      "strategie": "muse-repli (heuristic)",
+      "tempsMs": {
+        "n": 5,
+        "min": 0.3151,
+        "med": 0.3318,
+        "max": 0.5768,
+        "mean": 0.41234000000000004
+      },
+      "reussite": "5/5",
+      "transfertsOctets": 0,
+      "placements": {
+        "mm": "w2",
+        "A": "w2",
+        "B": "w2",
+        "qi": "w2",
+        "mm2": "w2",
+        "C": "w2",
+        "qf": "w2",
+        "out": "w2",
+        "D": "w2"
+      }
+    },
+    "E": {
+      "strategie": "round-robin + NT-Flux",
+      "tempsMs": {
+        "n": 5,
+        "min": 0.3345,
+        "med": 0.3516,
+        "max": 0.4211,
+        "mean": 0.36044
+      },
+      "reussite": "5/5",
+      "transfertsOctets": 10240,
+      "transfertsFluxOctets": 7217,
+      "codecs": {
+        "raw": 2,
+        "gzip": 2
+      },
+      "placements": {
+        "mm": "w1",
+        "A": "w1",
+        "B": "w1",
+        "qi": "w2",
+        "mm2": "w1",
+        "C": "w1",
+        "qf": "w2",
+        "out": "w1",
+        "D": "w1"
+      }
+    }
+  },
+  "recuperationPanne": "OK (retry mm2)",
+  "memoireMaxObserveeOctets": 1838072
+}

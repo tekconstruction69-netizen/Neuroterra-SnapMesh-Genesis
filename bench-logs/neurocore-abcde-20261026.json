@@ -1,0 +1,79 @@
+{
+  "module": "NeuroCore",
+  "date": "2026-10-26T20:28:06.779Z",
+  "node": "v24.14.0",
+  "reps": 5,
+  "limites": "workers = registres de cette machine ; 2 appareils et LAN : NON EXÉCUTÉS ; temps sub-ms non significatifs",
+  "bras": {
+    "A": {
+      "strategie": "mono-appareil",
+      "tempsMs": {
+        "n": 5,
+        "min": 0.3019,
+        "med": 0.4994,
+        "max": 2.2708,
+        "mean": 0.9656400000000002
+      },
+      "reussite": "5/5",
+      "transfertsOctets": 0
+    },
+    "B": {
+      "strategie": "round-robin",
+      "tempsMs": {
+        "n": 5,
+        "min": 0.1486,
+        "med": 0.2607,
+        "max": 0.4074,
+        "mean": 0.25077999999999995
+      },
+      "reussite": "5/5",
+      "transfertsOctets": 2560
+    },
+    "C": {
+      "strategie": "capacités",
+      "tempsMs": {
+        "n": 5,
+        "min": 0.1267,
+        "med": 0.1578,
+        "max": 0.2064,
+        "mean": 0.16182000000000002
+      },
+      "reussite": "5/5",
+      "transfertsOctets": 0
+    },
+    "D": {
+      "strategie": "adaptatif sans apprentissage",
+      "tempsMs": {
+        "n": 5,
+        "min": 0.8435,
+        "med": 0.9463,
+        "max": 2.9898,
+        "mean": 1.3518599999999998
+      },
+      "reussite": "5/5",
+      "surchargeMs": 0.9042600000000001
+    },
+    "E": {
+      "strategie": "neurocore + apprentissage",
+      "tempsMs": {
+        "n": 5,
+        "min": 0.636,
+        "med": 0.7417,
+        "max": 0.8993,
+        "mean": 0.76784
+      },
+      "reussite": "5/5",
+      "erreurPredictionParRep": [
+        0.3996530966227936,
+        0.37333733373337336,
+        0.1853843178955329,
+        0.26107215242457593,
+        0.6554576747847498
+      ],
+      "surchargeMs": 0.53426
+    }
+  },
+  "decisionsInvalides": 0,
+  "recuperationPanne": "OK (replan + reprise)",
+  "falsifies": "couvert par quorum §7 sur le réseau (M2 63/63), pas rejoué ici"
+}
