@@ -1,0 +1,46 @@
+✔ démo statique (placeholder) : zéro réseau, contrôles désactivés (5.269ms)
+✔ démo statique (jeton absent) : zéro réseau (1.2093ms)
+✔ mode local : START puis STOP authentifiés par en-tête (3.59ms)
+✔ mode local : échec réseau des commandes capturé sans rejet (2.6798ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 87.2351
+✔ jeton : unique, 48 hex, vérifié strict (3.8581ms)
+✔ origin : locale acceptée, tierce refusée (0.3182ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 2
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 77.0428
+✔ serveur : démarrage, état initial arrêté, page servie (315.1369ms)
+✔ START exige consentement, puis STOP confirme (22.8275ms)
+✔ P2 : sans jeton 401, Origin tierce 403, corps énorme 413 (13.4238ms)
+✔ garde-fou : TASK refusée quand STOPPED (pas de contournement) (15.8539ms)
+✔ déconnexion réseau réelle : SUSPENDED puis reprise à la reconnexion (12584.9298ms)
+✔ HTML servi : script inline syntaxiquement valide, propriété jeton intacte, no-store (4.8638ms)
+ℹ tests 6
+ℹ suites 0
+ℹ pass 6
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 13037.7826
+✔ app : job refusé 409 quand STOPPED (frein orchestrateur) (311.0022ms)
+✔ app : job bout-en-bout via HTTP avec faisceau vérifié (333.1594ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 2
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 729.5218

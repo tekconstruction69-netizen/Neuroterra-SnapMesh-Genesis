@@ -3,25 +3,75 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>SnapMesh — Contribuer en sécurité</title>
+<title>SnapMesh Genesis — démonstration et contrôle local</title>
 <link rel="manifest" href="/manifest.json">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
 <meta name="theme-color" content="#1d4d2b">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="SnapMesh">
 <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
 <main>
   <h1>SnapMesh Genesis</h1>
-  <p class="subtitle">Contribuez au calcul partagé, dans vos limites.</p>
+  <p class="subtitle">Contribuer au calcul partagé, dans vos limites — sans promesse non mesurée.</p>
 
-  <section class="panel" aria-label="Contrôle">
-    <div class="state" id="state">État : arrêté</div>
-    <p class="reason" id="reason"></p>
-    <button id="toggle" class="big">DÉMARRER</button>
-    <label class="consent"><input type="checkbox" id="consent"> Je consens à partager mes ressources dans les limites ci-dessous.</label>
+  <section class="panel banner" id="mode-banner" aria-label="Mode d'affichage">
+    <strong id="mode-title">Démonstration statique</strong>
+    <p id="mode-text">Cette page publique est une démonstration statique : aucune passerelle de production, aucun appareil connecté et aucun calcul en direct. Les contrôles sont désactivés et aucune donnée en direct n'est affichée.</p>
+  </section>
+
+  <section class="panel" aria-label="Présentation">
+    <h2>Le problème : le calcul IA hétérogène</h2>
+    <p>Les appareils disponibles (PC, stations, futurs accélérateurs) n'ont ni les mêmes processeurs, ni les mêmes formats de tenseurs, ni les mêmes limites. SnapMesh Genesis explore comment répartir un calcul entre volontaires sans supposer un matériel homogène.</p>
+    <ul>
+      <li><b>NT-UCP — compatibilité détectée, jamais inventée :</b> chaque nœud annonce ses capacités mesurées ou détectées localement. Une conversion de format n'a lieu que par un nœud <code>cast</code> explicite dans le graphe ; aucun changement silencieux de précision n'est autorisé.</li>
+      <li><b>NeuroCore — sélection et arbitre déterministe :</b> un plan peut être proposé, mais l'arbitre déterministe le re-valide (budgets, capacités, signatures) avant tout placement. Si le plan ou le service proposant est indisponible, le repli local déterministe prend le relais et le signale.</li>
+      <li><b>Worker volontaire :</b> un appareil ne contribue que sur démarrage explicite, avec consentement, limites choisies et STOP utilisateur prioritaire sur tout ordonnanceur.</li>
+      <li><b>Vérification par reçus et quorum :</b> les résultats remontent avec des reçus signés vérifiés avant vote, puis un quorum décide. Un reçu prouve l'imputabilité d'un résultat, <b>pas son exactitude</b> ; le quorum n'est ni une preuve cryptographique complète, ni une protection anti-collusion.</li>
+    </ul>
+    <p class="note">Statuts : les éléments marqués [FONCTIONNEL] le sont dans le périmètre local et historique documenté (même hôte, boucle locale), pas en production distribuée.</p>
+  </section>
+
+  <section class="panel" aria-label="Preuves et limites">
+    <h2>Preuves publiques et limites connues</h2>
+    <ul>
+      <li>Dépôt source : <a href="https://github.com/tekconstruction69-netizen/Neuroterra-SnapMesh-Genesis">github.com/tekconstruction69-netizen/Neuroterra-SnapMesh-Genesis</a></li>
+      <li>Résultats M6 : <a href="https://github.com/tekconstruction69-netizen/Neuroterra-SnapMesh-Genesis/blob/main/docs/M6_RESULTS.md">docs/M6_RESULTS.md sur GitHub</a></li>
+      <li>Journaux bruts existants : <a href="https://github.com/tekconstruction69-netizen/Neuroterra-SnapMesh-Genesis/tree/main/bench-logs">bench-logs/ sur GitHub</a> (par exemple <code>bench-logs/m6-e2e-2026-10-29.json</code>)</li>
+    </ul>
+    <ul>
+      <li>Run physique à 2 PC : <b>NON EXÉCUTÉ</b>.</li>
+      <li>GPU / NPU : <b>non démontrés</b> sur ce périmètre ; un accélérateur absent est déclaré absent.</li>
+      <li>Traversée NAT et relais : <b>[RECHERCHE]</b>.</li>
+      <li>Thermique : <b>non mesurée</b> sur le poste de référence (aucune sonde fiable) ; politique conservatrice, aucun plafonnement matériel promis.</li>
+      <li>Installation PWA : manifeste, service worker et icônes (192/512 et apple-touch-icon) présents dans le code ; installation réelle sur appareil <b>NON VÉRIFIÉE</b>. L'ajout à l'écran d'accueil reste possible selon le navigateur. Aucun mode hors-ligne n'est promis.</li>
+    </ul>
+  </section>
+
+  <section class="panel" aria-label="iPhone et iPad">
+    <h2>Sur iPhone / iPad (Safari)</h2>
+    <p>Ajout à l'écran d'accueil (indicatif, installation non testée sur appareil) : ouvrez cette page dans <b>Safari</b>, touchez <b>Partager</b>, puis <b>Sur l'écran d'accueil</b>.</p>
+    <ul>
+      <li><b>Sur ce site :</b> démonstration statique désactivée uniquement. Ni l'état, ni l'identité, ni le consentement, ni aucun calcul ne sont opérationnels ici ; il n'y a ni pair connecté, ni passerelle de contrôle.</li>
+      <li>Le serveur d'application sur PC écoute en boucle locale (loopback) : il n'est pas accessible depuis un iPhone.</li>
+      <li><b>Non promis sous iOS :</b> aucun calcul en arrière-plan, aucun plafonnement CPU, aucune mesure thermique ou batterie. Voir <a href="https://github.com/tekconstruction69-netizen/Neuroterra-SnapMesh-Genesis/blob/main/docs/DEVICE_SAFETY.md">docs/DEVICE_SAFETY.md</a> et la matrice <code>mesh-safety/src/platforms.js</code> du dépôt.</li>
+    </ul>
+  </section>
+
+  <section class="panel" aria-label="Contrôle local">
+    <h2>Contrôle local (procédure)</h2>
+    <p id="local-help">En démonstration statique, ces contrôles restent désactivés : cette page ne contacte aucun serveur. Pour le contrôle réel, lancez le serveur de boucle locale sur votre machine (<code>node mesh-app/server.js</code>), puis ouvrez l'adresse locale affichée dans votre terminal. Le jeton local injecté par ce seul serveur active alors les contrôles ci-dessous ; STOP reste prioritaire à tout moment.</p>
+    <p class="note">Procédures détaillées : <a href="https://github.com/tekconstruction69-netizen/Neuroterra-SnapMesh-Genesis/blob/main/docs/USER_APPLICATION.md">guide d'application (GitHub)</a> et <a href="https://github.com/tekconstruction69-netizen/Neuroterra-SnapMesh-Genesis/blob/main/docs/M5_LAN_TEST_PROCEDURE.md">procédure de test LAN (GitHub)</a>.</p>
+    <div class="state" id="state">État : démonstration statique</div>
+    <p class="reason" id="reason">Aucun serveur local authentifié détecté : contrôles désactivés.</p>
+    <button id="toggle" class="big" disabled>DÉMARRER</button>
+    <label class="consent"><input type="checkbox" id="consent" disabled> Je consens à partager mes ressources dans les limites ci-dessous.</label>
     <div class="modes" role="group" aria-label="Mode">
-      <button data-mode="eco">Éco (1 %)</button>
-      <button data-mode="balanced" class="on">Équilibré (5 %)</button>
-      <button data-mode="performance">Performance (10 %)</button>
+      <button data-mode="eco" disabled>Éco (1 %)</button>
+      <button data-mode="balanced" class="on" disabled>Équilibré (5 %)</button>
+      <button data-mode="performance" disabled>Performance (10 %)</button>
     </div>
     <p class="note">Objectifs de service coopératifs, pas des plafonds matériels. Aucun revenu promis.</p>
   </section>
@@ -34,6 +84,7 @@
       <div><dt>Tâches actives</dt><dd id="r-tasks">—</dd></div>
       <div><dt>Thermique</dt><dd id="r-th">—</dd></div>
     </dl>
+    <p class="note">En démonstration statique, ces valeurs restent à « — » : rien n'est mesuré.</p>
   </section>
 
   <section class="panel" aria-label="Profil">
@@ -48,35 +99,35 @@
   <section class="panel" aria-label="Capacités">
     <h2>Capacités NT-CAP</h2>
     <div id="caps-self">—</div>
-    <ul id="caps-peers"><li>Aucun pour l'instant.</li></ul>
+    <ul id="caps-peers"><li>—</li></ul>
   </section>
 
   <section class="panel" aria-label="Réseau">
-    <h2>Nœuds connectés (<span id="n-count">0</span>)</h2>
-    <ul id="peers"><li>Aucun pour l'instant.</li></ul>
+    <h2>Nœuds connectés (<span id="n-count">—</span>)</h2>
+    <ul id="peers"><li>—</li></ul>
     <svg id="graph" width="100%" height="160" role="img" aria-label="Graphe du réseau"></svg>
   </section>
 
   <section class="panel" aria-label="Tâche">
     <h2>Soumettre un calcul vérifié</h2>
     <label>Preset
-      <select id="job-preset">
+      <select id="job-preset" disabled>
         <option value="batch-fib">Lot de Fibonacci (parallèle)</option>
         <option value="split-wordcount">Comptage de mots (découpé)</option>
         <option value="chain-matmul">Chaîne de produits matriciels</option>
       </select>
     </label>
     <label>Paramètres (JSON)
-      <textarea id="job-params" rows="3">{"ns": [20, 25]}</textarea>
+      <textarea id="job-params" rows="3" disabled>{"ns": [20, 25]}</textarea>
     </label>
-    <button id="job-run">EXÉCUTER</button>
+    <button id="job-run" disabled>EXÉCUTER</button>
     <p class="reason" id="job-status"></p>
     <div id="job-out">—</div>
   </section>
 
   <section class="panel" aria-label="Résultats">
     <h2>Résultats vérifiés</h2>
-    <ul id="results"><li>Aucun pour l'instant.</li></ul>
+    <ul id="results"><li>—</li></ul>
   </section>
 </main>
 <script>window.__GENESIS_TOKEN__ = "__GENESIS_TOKEN__";</script>

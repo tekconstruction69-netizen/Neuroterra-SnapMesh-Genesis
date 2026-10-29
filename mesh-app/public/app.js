@@ -1,5 +1,11 @@
 'use strict';
-/* SnapMesh app : START/STOP, modes, état temps réel (SSE + repli polling). */
+/* SnapMesh app : deux modes stricts, décidés par le jeton local uniquement.
+   - Jeton local valide (injecté par mesh-app/server.js, boucle locale) :
+     comportement local existant (START/STOP, modes, SSE + repli polling).
+   - Sinon (placeholder "__GENESIS_TOKEN__", absent ou malformé) :
+     démonstration statique explicite — contrôles désactivés, aucune
+     donnée mesurée, zéro fetch/EventSource/polling vers /api.
+   Le mode n'est jamais déduit du nom d'hôte. */
 
 const ETATS = {
   STOPPED: 'arrêté', STARTING: 'démarrage', ACTIVE: 'actif',
@@ -9,9 +15,40 @@ const ETATS = {
 const $ = (id) => document.getElementById(id);
 const toggle = $('toggle');
 
-const TOKEN = (window.__GENESIS_TOKEN__ && !window.__GENESIS_TOKEN__.includes('GENESIS_TOKEN'))
+// Jeton local : format émis par src/guards.js (48 hex). Le placeholder
+// servi tel quel sur l'hébergement statique ne correspond pas à ce format.
+const TOKEN = (typeof window.__GENESIS_TOKEN__ === 'string' && /^[0-9a-f]{48}$/.test(window.__GENESIS_TOKEN__))
   ? window.__GENESIS_TOKEN__
   : null;
+const LOCAL = TOKEN !== null;
+
+function controls() {
+  return [toggle, $('consent'), $('job-run'), $('job-preset'), $('job-params'),
+    ...document.querySelectorAll('.modes button')].filter(Boolean);
+}
+
+function setControlsEnabled(enabled) {
+  for (const el of controls()) el.disabled = !enabled;
+}
+
+function applyDemoMode() {
+  setControlsEnabled(false);
+  const banner = $('mode-banner');
+  if (banner) banner.classList.remove('local');
+  if ($('mode-title')) $('mode-title').textContent = 'Démonstration statique';
+  if ($('mode-text')) $('mode-text').textContent = 'Cette page publique est une démonstration statique : aucune passerelle de production, aucun appareil connecté et aucun calcul en direct. Les contrôles sont désactivés et aucune donnée en direct n\'est affichée.';
+  if ($('state')) $('state').textContent = 'État : démonstration statique';
+  if ($('reason')) $('reason').textContent = 'Aucun serveur local authentifié détecté : contrôles désactivés.';
+}
+
+function applyLocalMode() {
+  setControlsEnabled(true);
+  const banner = $('mode-banner');
+  if (banner) banner.classList.add('local');
+  if ($('mode-title')) $('mode-title').textContent = 'Mode local authentifié';
+  if ($('mode-text')) $('mode-text').textContent = 'Serveur de boucle locale authentifié par jeton local : les contrôles ci-dessous agissent sur votre machine uniquement. STOP reste prioritaire sur tout ordonnanceur.';
+  if ($('state')) $('state').textContent = 'État : connexion au serveur local…';
+}
 
 async function call(path, body) {
   const r = await fetch(path, {
@@ -127,6 +164,7 @@ function esc(x) {
 }
 
 toggle.addEventListener('click', async () => {
+  if (!LOCAL) { applyDemoMode(); return; }
   toggle.disabled = true;
   try {
     const st = await (await fetch('/api/state')).json();
@@ -141,6 +179,8 @@ toggle.addEventListener('click', async () => {
       }
     }
     await refresh();
+  } catch {
+    $('reason').textContent = 'Commande locale échouée : serveur injoignable ou réponse invalide.';
   } finally {
     toggle.disabled = false;
   }
@@ -149,6 +189,7 @@ toggle.addEventListener('click', async () => {
 const jobRun = $('job-run');
 if (jobRun) {
   jobRun.addEventListener('click', async () => {
+    if (!LOCAL) { applyDemoMode(); return; }
     const st = $('job-status');
     const out = $('job-out');
     st.textContent = 'Exécution en cours…';
@@ -177,8 +218,13 @@ if (jobRun) {
 
 document.querySelectorAll('.modes button').forEach((b) => {
   b.addEventListener('click', async () => {
-    await call('/api/mode', { mode: b.dataset.mode });
-    await refresh();
+    if (!LOCAL) { applyDemoMode(); return; }
+    try {
+      await call('/api/mode', { mode: b.dataset.mode });
+      await refresh();
+    } catch {
+      $('reason').textContent = 'Commande locale échouée : serveur injoignable ou réponse invalide.';
+    }
   });
 });
 
@@ -186,11 +232,18 @@ if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.
   navigator.serviceWorker.register('/sw.js').catch(() => {});
 }
 
-try {
-  const es = new EventSource('/api/events');
-  es.onmessage = (e) => render(JSON.parse(e.data));
-  es.onerror = () => { es.close(); setInterval(refresh, 2000); };
-} catch {
-  setInterval(refresh, 2000);
+if (!LOCAL) {
+  applyDemoMode();
+} else {
+  applyLocalMode();
+  try {
+    const es = new EventSource('/api/events');
+    es.onmessage = (e) => {
+      try { render(JSON.parse(e.data)); } catch { /* trame ignorée, état conservé */ }
+    };
+    es.onerror = () => { es.close(); setInterval(refresh, 2000); };
+  } catch {
+    setInterval(refresh, 2000);
+  }
+  refresh();
 }
-refresh();

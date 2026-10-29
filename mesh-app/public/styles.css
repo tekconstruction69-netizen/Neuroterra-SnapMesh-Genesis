@@ -32,4 +32,12 @@ dl#res > div { display: flex; justify-content: space-between; padding: 0.25rem 0
 dl#res dt { font-weight: 600; }
 ul { margin: 0.25rem 0; padding-left: 1.25rem; }
 li { margin-bottom: 0.25rem; }
+.banner { border-color: #a4262c; background: #fdf1f1; }
+.banner.local { border-color: #1d6b38; background: #eef6f0; }
+.banner p { margin: 0.25rem 0 0; }
+button:disabled, select:disabled, textarea:disabled, input:disabled { opacity: 0.55; cursor: not-allowed; }
+a { overflow-wrap: anywhere; }
+code { overflow-wrap: anywhere; }
+select, textarea { width: 100%; margin: 0.25rem 0 0.75rem; }
+label { display: block; }
 @media (prefers-reduced-motion: reduce) { * { transition: none; } }

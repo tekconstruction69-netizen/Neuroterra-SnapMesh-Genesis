@@ -1,0 +1,13 @@
+{
+  "name": "snapmesh-nt-registry",
+  "version": "0.1.0",
+  "description": "Prototype local NT Global Registry : NT-ID (format), empreinte déclarée des capacités (capsHash, format seulement), disponibilités avec expiration, politiques de contribution. Bibliothèque locale non authentifiée, non reliée à la passerelle ; seuls les champs d'adresse directs sont rejetés.",
+  "type": "commonjs",
+  "main": "src/registry.js",
+  "scripts": {
+    "test": "node --test --test-timeout=60000 test/unit.test.js"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

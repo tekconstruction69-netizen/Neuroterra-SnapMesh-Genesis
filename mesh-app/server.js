@@ -248,8 +248,15 @@ async function main() {
           res.end('erreur');
           return;
         }
-        res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
-        res.end(html.split('__GENESIS_TOKEN__').join(LOCAL_TOKEN));
+        // Remplacer UNIQUEMENT la valeur JSON du placeholder
+        // ("__GENESIS_TOKEN__" entre guillemets) : le nom de propriété
+        // window.__GENESIS_TOKEN__ doit rester intact. no-store : le HTML
+        // local contient le jeton, il ne doit jamais être mis en cache.
+        res.writeHead(200, {
+          'Content-Type': 'text/html; charset=utf-8',
+          'Cache-Control': 'no-store',
+        });
+        res.end(html.replace('"__GENESIS_TOKEN__"', JSON.stringify(LOCAL_TOKEN)));
       });
       return;
     }

@@ -1,0 +1,1 @@
+EXPORT PROPRE : aucune clé, env, dépendance ou secret détecté (hors .tmp, node_modules, .venv).

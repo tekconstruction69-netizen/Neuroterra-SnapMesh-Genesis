@@ -166,6 +166,23 @@ test('déconnexion réseau réelle : SUSPENDED puis reprise à la reconnexion', 
   assert.equal(back.safety.meshSuspended, false);
 });
 
+test('HTML servi : script inline syntaxiquement valide, propriété jeton intacte, no-store', async () => {
+  const vm = require('node:vm');
+  const res = await fetch(BASE + '/');
+  assert.match(res.headers.get('cache-control') || '', /no-store/, 'HTML local sans no-store');
+  const html = await res.text();
+  // Le placeholder de valeur ne doit plus subsister entre guillemets,
+  // mais le nom de propriété window.__GENESIS_TOKEN__ doit être intact.
+  assert.ok(!html.includes('"__GENESIS_TOKEN__"'), 'placeholder de jeton encore servi');
+  assert.ok(html.includes('window.__GENESIS_TOKEN__'), 'propriété window.__GENESIS_TOKEN__ détruite');
+  const m = html.match(/<script>([\s\S]*?__GENESIS_TOKEN__[\s\S]*?)<\/script>/);
+  assert.ok(m, 'script inline du jeton introuvable');
+  assert.doesNotThrow(() => new vm.Script(m[1]), 'script inline servi syntaxiquement invalide');
+  const win = {};
+  vm.runInNewContext(m[1], { window: win });
+  assert.equal(win.__GENESIS_TOKEN__, TOKEN, 'valeur du jeton servi différente du jeton du serveur');
+});
+
 after(() => {
   try { server && server.kill('SIGKILL'); } catch {}
   for (const c of children2) {

@@ -1,11 +1,14 @@
-# Netlify — static control-UI demo ONLY.
-# Publishes mesh-app/public (no server, no workers, no local ports,
-# no admin API). The page's /api calls have no backend on Netlify and
-# degrade in the UI; run `node mesh-app/server.js` locally for the
-# full loopback application. No secrets are required or exposed here.
+# Netlify — démonstration publique : frontend statique + deux fonctions
+# informatives (netlify/functions : gateway, join). Aucun coordinateur,
+# aucun worker de calcul, aucune API locale exposée, aucun secret.
+# Sur cet hébergement, la page reste en démonstration statique
+# (contrôles désactivés, aucun appel /api). L'application locale
+# authentifiée se lance séparément avec mesh-app/server.js sur la
+# machine de l'utilisateur ; elle n'est pas exposée ici.
 
 [build]
   publish = "mesh-app/public"
+  functions = "netlify/functions"
 
 [[headers]]
   for = "/*"
@@ -13,3 +16,18 @@
     X-Content-Type-Options = "nosniff"
     Referrer-Policy = "no-referrer"
     X-Frame-Options = "DENY"
+
+[[headers]]
+  for = "/"
+  [headers.values]
+    Cache-Control = "no-store"
+
+[[headers]]
+  for = "/index.html"
+  [headers.values]
+    Cache-Control = "no-store"
+
+[[headers]]
+  for = "/sw.js"
+  [headers.values]
+    Cache-Control = "no-cache, no-store, must-revalidate"
