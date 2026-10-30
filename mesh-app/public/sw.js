@@ -4,7 +4,7 @@
    Jamais de HTML (il peut contenir le jeton local en mode local),
    jamais d'API. Aucun mode hors-ligne ni installation n'est promis :
    la navigation n'est pas mise en cache. */
-const CACHE = 'snapmesh-public-v3';
+const CACHE = 'snapmesh-public-v4';
 const ASSETS = ['/styles.css', '/app.js', '/manifest.json', '/icons/icon-192.png', '/icons/icon-512.png', '/icons/apple-touch-icon.png'];
 
 self.addEventListener('install', (e) => {
@@ -30,3 +30,4 @@ self.addEventListener('fetch', (e) => {
   if (!ASSETS.includes(url.pathname)) return; // le reste : réseau seul
   e.respondWith(caches.match(e.request).then((hit) => hit || fetch(e.request)));
 });
+
