@@ -3,7 +3,10 @@
 /**
  * Frontend réel (public/app.js) exécuté dans node:vm, sans dépendance :
  * DOM minimal + espions fetch/EventSource/timers.
- * - Démo statique (placeholder) : zéro appel réseau, contrôles désactivés.
+ * - Démo statique (placeholder/absent) : seul GET public
+ *   /.netlify/functions/gateway permis au chargement (informatif,
+ *   nodesLive:null, sans jeton ni données sensibles) ; zéro /api, SSE ou polling,
+ *   contrôles désactivés, clic forcé sans nouveau fetch.
  * - Mode local (jeton 48 hex) : START/STOP authentifiés par l'en-tête.
  * Aucun jeton réel n'est journalisé.
  */
@@ -52,7 +55,9 @@ function makeDom() {
     b.dataset.mode = m;
     return b;
   });
+  const body = new El('body');
   const document = {
+    body,
     getElementById(id) {
       if (!byId.has(id)) byId.set(id, new El(id === 'toggle' || id === 'job-run' ? 'button' : 'div'));
       return byId.get(id);
@@ -60,7 +65,7 @@ function makeDom() {
     querySelectorAll(sel) { return sel === '.modes button' ? modes : []; },
     createElementNS(_ns, tag) { return new El(tag); },
   };
-  return { document, byId, modes };
+  return { document, byId, modes, body };
 }
 
 function stateFixture(state = 'STOPPED') {
@@ -78,7 +83,7 @@ function stateFixture(state = 'STOPPED') {
 
 function loadApp({ token, fetchImpl }) {
   const { document, byId, modes } = makeDom();
-  const calls = { fetch: [], eventSource: 0, intervals: 0 };
+  const calls = { fetch: [], eventSource: 0, intervals: 0, timers: [] };
   const window = {};
   if (token !== undefined) window.__GENESIS_TOKEN__ = token;
   const sandbox = {
@@ -87,7 +92,7 @@ function loadApp({ token, fetchImpl }) {
     navigator: {},
     location: { protocol: 'http:', hostname: '127.0.0.1' },
     console,
-    setInterval: () => { calls.intervals++; return 1; },
+    setInterval: (fn) => { calls.intervals++; calls.timers.push(fn); return calls.timers.length; },
     clearInterval: () => {},
     fetch: async (url, opts = {}) => {
       calls.fetch.push({ url: String(url), opts });
@@ -105,32 +110,60 @@ function loadApp({ token, fetchImpl }) {
 }
 
 const flush = async () => { for (let i = 0; i < 5; i++) await new Promise((r) => setImmediate(r)); };
-const neverFetch = async () => { throw new Error('fetch interdit en démo'); };
+// Timers UI locaux (compteur contribution app.js:342, garde batterie :399) :
+// on les exécute en cycles bornés ; ils ne doivent déclencher aucun fetch.
+async function runUiTimers(calls, cycles = 2) {
+  for (let i = 0; i < cycles; i++) {
+    for (const fn of [...calls.timers]) await fn();
+    await flush();
+  }
+}
+const GATEWAY_URL = '/.netlify/functions/gateway';
+// Stub démo : vraie réponse informative gateway, rejette tout autre chemin/méthode.
+const demoGatewayImpl = async (url, opts = {}) => {
+  if (String(url) !== GATEWAY_URL) throw new Error('fetch non autorisé en démo : ' + String(url));
+  if (((opts && opts.method) || 'GET') !== 'GET') throw new Error('méthode non autorisée en démo');
+  return { ok: true, json: async () => ({ nodesLive: null }) };
+};
 
-test('démo statique (placeholder) : zéro réseau, contrôles désactivés', async () => {
-  const { calls, byId, modes, document } = loadApp({ token: '__GENESIS_TOKEN__', fetchImpl: neverFetch });
+test('démo statique (placeholder) : seul GET gateway public, contrôles désactivés', async () => {
+  const { calls, byId, modes, document } = loadApp({ token: '__GENESIS_TOKEN__', fetchImpl: demoGatewayImpl });
   await flush();
-  assert.equal(calls.fetch.length, 0, 'fetch appelé en démo');
+  assert.deepEqual(calls.fetch.map((c) => String(c.url)), [GATEWAY_URL], 'seul /.netlify/functions/gateway permis en démo');
+  const init = calls.fetch[0];
+  assert.equal((init.opts && init.opts.method) || 'GET', 'GET', 'gateway démo non GET');
+  assert.ok(!init.opts.headers || !init.opts.headers['X-Genesis-Token'], 'jeton envoyé en démo');
+  assert.equal(init.opts.body, undefined, 'données sensibles envoyées en démo');
+  assert.ok(!calls.fetch.some((c) => String(c.url).startsWith('/api')), '/api appelé en démo');
   assert.equal(calls.eventSource, 0, 'EventSource ouvert en démo');
-  assert.equal(calls.intervals, 0, 'polling démarré en démo');
+  // Comportement : les timers UI locaux (compteur, garde batterie) peuvent
+  // exister ; exécutés en cycles bornés, ils ne doivent ajouter aucun fetch.
+  await runUiTimers(calls, 2);
+  assert.deepEqual(calls.fetch.map((c) => String(c.url)), [GATEWAY_URL], 'timers UI ont déclenché un fetch en démo');
   assert.match(byId.get('mode-title').textContent, /Démonstration statique/);
   assert.match(byId.get('state').textContent, /démonstration statique/);
   assert.equal(document.getElementById('toggle').disabled, true);
   assert.equal(document.getElementById('job-run').disabled, true);
   assert.ok(modes.every((b) => b.disabled), 'modes actifs en démo');
   assert.equal(document.getElementById('r-cpu').textContent || '—', '—');
-  // Même un clic forcé sur le bouton désactivé ne doit rien appeler.
+  // Même un clic forcé sur le bouton désactivé ne doit rien ajouter.
   await document.getElementById('toggle').click();
   await flush();
-  assert.equal(calls.fetch.length, 0, 'fetch appelé après clic en démo');
+  assert.equal(calls.fetch.length, 1, 'fetch ajouté après clic en démo');
 });
 
-test('démo statique (jeton absent) : zéro réseau', async () => {
-  const { calls, document } = loadApp({ token: undefined, fetchImpl: neverFetch });
+test('démo statique (jeton absent) : seul GET gateway public', async () => {
+  const { calls, document } = loadApp({ token: undefined, fetchImpl: demoGatewayImpl });
   await flush();
-  assert.equal(calls.fetch.length, 0);
+  assert.deepEqual(calls.fetch.map((c) => String(c.url)), [GATEWAY_URL], 'seul /.netlify/functions/gateway permis en démo');
+  const init = calls.fetch[0];
+  assert.equal((init.opts && init.opts.method) || 'GET', 'GET', 'gateway démo non GET');
+  assert.ok(!init.opts.headers || !init.opts.headers['X-Genesis-Token'], 'jeton envoyé en démo');
+  assert.ok(!calls.fetch.some((c) => String(c.url).startsWith('/api')), '/api appelé en démo');
   assert.equal(calls.eventSource, 0);
-  assert.equal(calls.intervals, 0);
+  await runUiTimers(calls, 2);
+  assert.deepEqual(calls.fetch.map((c) => String(c.url)), [GATEWAY_URL], 'timers UI ont déclenché un fetch en démo');
+  assert.ok(!calls.fetch.some((c) => String(c.url).startsWith('/api')), '/api appelé via timers en démo');
   assert.equal(document.getElementById('toggle').disabled, true);
 });
 
