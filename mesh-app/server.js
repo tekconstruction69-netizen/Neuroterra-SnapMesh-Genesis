@@ -58,6 +58,10 @@ async function main() {
     keyFile: arg('key', './data-app.key'),
     statusPort: Number(arg('status-port', '48151')),
     discoveryPort: arg('discovery-port', undefined) ? Number(arg('discovery-port')) : undefined,
+    // Enregistrement sortant UNIQUEMENT (aucun port ouvert ajouté) :
+    // HELLO signé + caps vérifiées + challenge de session, mécanisme
+    // existant avec rappel automatique. Sans SNAPMESH_PEER : solo prêt.
+    manualPeers: (process.env.SNAPMESH_PEER || '').split(',').map((s) => s.trim()).filter(Boolean),
   });
   const admitted = []; // fenêtres d'admission (timestamps)
   const gate = (op, from, taskId) => {
@@ -218,6 +222,20 @@ async function main() {
         } catch (e) {
           return json(res, { error: String((e && e.message) || e).slice(0, 300) }, 400);
         }
+      });
+    }
+    // Diagnostic local à la demande : microcalcul réel borné (pas de
+    // contribution simulée, aucun calcul exécuté sans cet appel explicite).
+    if (req.method === 'POST' && url.pathname === '/api/diag') {
+      return guarded(req, res, () => {
+        const peers = node.registry.live().length;
+        return json(res, {
+          at: new Date().toISOString(),
+          workerState: controller.deriveWorkerState({ peers, everHadPeers: hadPeers }),
+          microbench: microbenchCpu(),
+          limits: { ...controller.targets, mode: controller.mode },
+          caps: node.caps(),
+        });
       });
     }
     if (req.method === 'POST' && ['/api/start', '/api/stop', '/api/mode', '/api/targets', '/api/reset-emergency'].includes(url.pathname)) {

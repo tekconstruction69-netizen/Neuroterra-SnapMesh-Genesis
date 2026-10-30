@@ -190,6 +190,22 @@ toggle.addEventListener('click', async () => {
   }
 });
 
+const diagBtn = $('job-diag');
+if (diagBtn) {
+  diagBtn.addEventListener('click', async () => {
+    if (!LOCAL) { applyDemoMode(); return; }
+    const st = $('job-status');
+    st.textContent = 'Microcalcul de diagnostic en cours (borné, à votre demande)…';
+    try {
+      const r = await call('/api/diag', {});
+      const mb = r.microbench && r.microbench.valeur ? `${r.microbench.valeur.gflops} Gflops en ${r.microbench.valeur.matmul48Fp32Ms} ms` : 'non mesuré';
+      st.textContent = `Diagnostic local réel : ${mb} — état ${ETATS[r.workerState] || r.workerState}. Aucune contribution simulée.`;
+    } catch {
+      st.textContent = 'Serveur injoignable.';
+    }
+  });
+}
+
 const jobRun = $('job-run');
 if (jobRun) {
   jobRun.addEventListener('click', async () => {
