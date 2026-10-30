@@ -2,134 +2,268 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>SnapMesh Genesis — démonstration et contrôle local</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>SnapMesh Genesis — Réseau de calcul décentralisé</title>
 <link rel="manifest" href="/manifest.json">
 <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
-<meta name="theme-color" content="#1d4d2b">
+<meta name="theme-color" content="#04070f">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="SnapMesh">
 <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
-<main>
-  <h1>SnapMesh Genesis</h1>
-  <p class="subtitle">Contribuer au calcul partagé, dans vos limites — sans promesse non mesurée.</p>
-
-  <section class="panel banner" id="mode-banner" aria-label="Mode d'affichage">
-    <strong id="mode-title">Démonstration statique</strong>
-    <p id="mode-text">Cette page publique est une démonstration statique : aucune passerelle de production, aucun appareil connecté et aucun calcul en direct. Les contrôles sont désactivés et aucune donnée en direct n'est affichée.</p>
-  </section>
-
-  <section class="panel" aria-label="Présentation">
-    <h2>Le problème : le calcul IA hétérogène</h2>
-    <p>Les appareils disponibles (PC, stations, futurs accélérateurs) n'ont ni les mêmes processeurs, ni les mêmes formats de tenseurs, ni les mêmes limites. SnapMesh Genesis explore comment répartir un calcul entre volontaires sans supposer un matériel homogène.</p>
-    <ul>
-      <li><b>NT-UCP — compatibilité détectée, jamais inventée :</b> chaque nœud annonce ses capacités mesurées ou détectées localement. Une conversion de format n'a lieu que par un nœud <code>cast</code> explicite dans le graphe ; aucun changement silencieux de précision n'est autorisé.</li>
-      <li><b>NeuroCore — sélection et arbitre déterministe :</b> un plan peut être proposé, mais l'arbitre déterministe le re-valide (budgets, capacités, signatures) avant tout placement. Si le plan ou le service proposant est indisponible, le repli local déterministe prend le relais et le signale.</li>
-      <li><b>Worker volontaire :</b> un appareil ne contribue que sur démarrage explicite, avec consentement, limites choisies et STOP utilisateur prioritaire sur tout ordonnanceur.</li>
-      <li><b>Vérification par reçus et quorum :</b> les résultats remontent avec des reçus signés vérifiés avant vote, puis un quorum décide. Un reçu prouve l'imputabilité d'un résultat, <b>pas son exactitude</b> ; le quorum n'est ni une preuve cryptographique complète, ni une protection anti-collusion.</li>
-    </ul>
-    <p class="note">Statuts : les éléments marqués [FONCTIONNEL] le sont dans le périmètre local et historique documenté (même hôte, boucle locale), pas en production distribuée.</p>
-  </section>
-
-  <section class="panel" aria-label="Preuves et limites">
-    <h2>Preuves publiques et limites connues</h2>
-    <ul>
-      <li>Dépôt source : <a href="https://github.com/tekconstruction69-netizen/Neuroterra-SnapMesh-Genesis">github.com/tekconstruction69-netizen/Neuroterra-SnapMesh-Genesis</a></li>
-      <li>Résultats M6 : <a href="https://github.com/tekconstruction69-netizen/Neuroterra-SnapMesh-Genesis/blob/main/docs/M6_RESULTS.md">docs/M6_RESULTS.md sur GitHub</a></li>
-      <li>Journaux bruts existants : <a href="https://github.com/tekconstruction69-netizen/Neuroterra-SnapMesh-Genesis/tree/main/bench-logs">bench-logs/ sur GitHub</a> (par exemple <code>bench-logs/m6-e2e-2026-10-29.json</code>)</li>
-    </ul>
-    <ul>
-      <li>Run physique à 2 PC : <b>NON EXÉCUTÉ</b>.</li>
-      <li>GPU / NPU : <b>non démontrés</b> sur ce périmètre ; un accélérateur absent est déclaré absent.</li>
-      <li>Traversée NAT et relais : <b>[RECHERCHE]</b>.</li>
-      <li>Thermique : <b>non mesurée</b> sur le poste de référence (aucune sonde fiable) ; politique conservatrice, aucun plafonnement matériel promis.</li>
-      <li>Installation PWA : manifeste, service worker et icônes (192/512 et apple-touch-icon) présents dans le code ; installation réelle sur appareil <b>NON VÉRIFIÉE</b>. L'ajout à l'écran d'accueil reste possible selon le navigateur. Aucun mode hors-ligne n'est promis.</li>
-    </ul>
-  </section>
-
-  <section class="panel" aria-label="iPhone et iPad">
-    <h2>Sur iPhone / iPad (Safari)</h2>
-    <p>Ajout à l'écran d'accueil (indicatif, installation non testée sur appareil) : ouvrez cette page dans <b>Safari</b>, touchez <b>Partager</b>, puis <b>Sur l'écran d'accueil</b>.</p>
-    <ul>
-      <li><b>Sur ce site :</b> démonstration statique désactivée uniquement. Ni l'état, ni l'identité, ni le consentement, ni aucun calcul ne sont opérationnels ici ; il n'y a ni pair connecté, ni passerelle de contrôle.</li>
-      <li>Le serveur d'application sur PC écoute en boucle locale (loopback) : il n'est pas accessible depuis un iPhone.</li>
-      <li><b>Non promis sous iOS :</b> aucun calcul en arrière-plan, aucun plafonnement CPU, aucune mesure thermique ou batterie. Voir <a href="https://github.com/tekconstruction69-netizen/Neuroterra-SnapMesh-Genesis/blob/main/docs/DEVICE_SAFETY.md">docs/DEVICE_SAFETY.md</a> et la matrice <code>mesh-safety/src/platforms.js</code> du dépôt.</li>
-    </ul>
-  </section>
-
-  <section class="panel" aria-label="Contrôle local">
-    <h2>Contrôle local (procédure)</h2>
-    <p id="local-help">En démonstration statique, ces contrôles restent désactivés : cette page ne contacte aucun serveur. Pour le contrôle réel, lancez le serveur de boucle locale sur votre machine (<code>node mesh-app/server.js</code>), puis ouvrez l'adresse locale affichée dans votre terminal. Le jeton local injecté par ce seul serveur active alors les contrôles ci-dessous ; STOP reste prioritaire à tout moment.</p>
-    <p class="note">Procédures détaillées : <a href="https://github.com/tekconstruction69-netizen/Neuroterra-SnapMesh-Genesis/blob/main/docs/USER_APPLICATION.md">guide d'application (GitHub)</a> et <a href="https://github.com/tekconstruction69-netizen/Neuroterra-SnapMesh-Genesis/blob/main/docs/M5_LAN_TEST_PROCEDURE.md">procédure de test LAN (GitHub)</a>.</p>
-    <div class="state" id="state">État : démonstration statique</div>
-    <p class="reason" id="reason">Aucun serveur local authentifié détecté : contrôles désactivés.</p>
-    <button id="toggle" class="big" disabled>DÉMARRER</button>
-    <label class="consent"><input type="checkbox" id="consent" disabled> Je consens à partager mes ressources dans les limites ci-dessous.</label>
-    <div class="modes" role="group" aria-label="Mode">
-      <button data-mode="eco" disabled>Éco (1 %)</button>
-      <button data-mode="balanced" class="on" disabled>Équilibré (5 %)</button>
-      <button data-mode="performance" disabled>Performance (10 %)</button>
+<header class="topbar">
+  <div class="brand">
+    <svg class="logo" viewBox="0 0 64 64" aria-hidden="true"><polygon points="32,3 58,18 58,46 32,61 6,46 6,18" fill="none" stroke="#2fe89a" stroke-width="3"/><polygon points="32,14 48,23 48,41 32,50 16,41 16,23" fill="none" stroke="#2fd8e8" stroke-width="2"/><circle cx="32" cy="32" r="5" fill="#f2c14e"/></svg>
+    <div>
+      <h1>SnapMesh Genesis</h1>
+      <p>Réseau de calcul décentralisé</p>
     </div>
-    <p class="note">Objectifs de service coopératifs, pas des plafonds matériels. Aucun revenu promis.</p>
+  </div>
+  <div class="top-actions">
+    <button class="icon-btn" id="btn-notifs" aria-label="Notifications" title="Notifications">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a5 5 0 0 0-5 5v4l-2 4h14l-2-4V8a5 5 0 0 0-5-5Zm-2 14a2 2 0 0 0 4 0" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>
+    </button>
+    <button class="icon-btn" data-nav="device" aria-label="Mon appareil" title="Mon appareil">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M4 21c1.5-4 5-5.5 8-5.5s6.5 1.5 8 5.5" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>
+    </button>
+  </div>
+</header>
+
+<main>
+  <section class="view on" id="view-home" aria-label="Accueil">
+    <section class="panel banner" id="mode-banner" aria-label="Mode d'affichage">
+      <strong id="mode-title">Démonstration statique</strong>
+      <p id="mode-text">Aucun worker connecté.</p>
+    </section>
+
+    <section class="hero" aria-label="Analyse de l'appareil">
+      <div class="chip-wrap" aria-hidden="true">
+        <span class="orbit o1"><svg viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="14" rx="2" fill="none" stroke="#2fe89a" stroke-width="1.7"/><path d="M9 2v3M15 2v3M9 19v3M15 19v3M2 9h3M2 15h3M19 9h3M19 15h3" stroke="#2fe89a" stroke-width="1.7"/></svg></span>
+        <span class="orbit o2"><svg viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="10" rx="2" fill="none" stroke="#2fd8e8" stroke-width="1.7"/><path d="M7 21h10" stroke="#2fd8e8" stroke-width="1.7"/></svg></span>
+        <span class="orbit o3"><svg viewBox="0 0 24 24"><path d="M12 20a8 8 0 1 1 8-8" fill="none" stroke="#9a6bff" stroke-width="1.7"/><path d="M12 12l6-6" stroke="#9a6bff" stroke-width="1.7"/></svg></span>
+        <span class="orbit o4"><svg viewBox="0 0 24 24"><path d="M12 3v3M12 18v3M3 12h3M18 12h3M6 6l2 2M16 16l2 2M18 6l-2 2M8 16l-2 2" stroke="#f2c14e" stroke-width="1.7"/></svg></span>
+        <svg class="chip" viewBox="0 0 120 120"><polygon points="60,6 108,34 108,86 60,114 12,86 12,34" fill="#0a1626" stroke="#2fe89a" stroke-width="2.5"/><rect x="38" y="38" width="44" height="44" rx="7" fill="#0d2138" stroke="#2fd8e8" stroke-width="2"/><path d="M46 38v-9M60 38v-9M74 38v-9M46 91v-9M60 91v-9M74 91v-9M38 46h-9M38 60h-9M38 74h-9M91 46h-9M91 60h-9M91 74h-9" stroke="#3f8cff" stroke-width="2.4"/><circle cx="60" cy="60" r="8" fill="#f2c14e"/></svg>
+      </div>
+      <label class="consent-line"><input type="checkbox" id="an-consent"> J'autorise l'analyse locale de cet appareil.</label>
+      <button id="analyze-btn" class="cta"><span class="cta-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3" fill="none" stroke="currentColor" stroke-width="2.2"/></svg></span><span>Autoriser l'analyse de votre appareil</span><span class="cta-chev" aria-hidden="true">›</span></button>
+      <p class="one-line"><span class="shield" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3l7 3v5c0 5-3 8-7 10-4-2-7-5-7-10V6z" fill="none" stroke="currentColor" stroke-width="1.8"/></svg></span> Analyse locale de votre CPU, GPU, mémoire, réseau et thermique.</p>
+      <p class="reason" id="analyze-status" role="status"></p>
+    </section>
+
+    <section class="cards" id="res-cards" aria-label="Ressources de l'appareil">
+      <article class="card locked accent-green" id="card-cpu"><h3>CPU / Puissance</h3><p id="a-cpu">En attente</p><span class="tag" id="t-cpu">En attente d'analyse</span><svg class="spark" viewBox="0 0 100 30" aria-hidden="true"><path d="M0 22 C20 22 30 8 50 14 S80 24 100 10" fill="none" stroke="#2fe89a" stroke-width="1.6"/></svg><span class="lock" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="6" y="11" width="12" height="9" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M8 11V8a4 4 0 0 1 8 0v3" fill="none" stroke="currentColor" stroke-width="1.8"/></svg></span></article>
+      <article class="card locked accent-gold" id="card-gpu"><h3>GPU / Mémoire</h3><p id="a-gpu">En attente</p><span class="tag" id="t-gpu">En attente d'analyse</span><svg class="spark" viewBox="0 0 100 30" aria-hidden="true"><path d="M0 20 C25 20 35 6 55 12 S80 26 100 8" fill="none" stroke="#f2c14e" stroke-width="1.6"/></svg><span class="lock" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="6" y="11" width="12" height="9" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M8 11V8a4 4 0 0 1 8 0v3" fill="none" stroke="currentColor" stroke-width="1.8"/></svg></span></article>
+      <article class="card locked accent-blue" id="card-net"><h3>Réseau</h3><p id="a-net">En attente</p><span class="tag" id="t-net">En attente d'analyse</span><svg class="spark" viewBox="0 0 100 30" aria-hidden="true"><path d="M0 24 C20 24 40 10 60 16 S85 24 100 12" fill="none" stroke="#3f8cff" stroke-width="1.6"/></svg><span class="lock" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="6" y="11" width="12" height="9" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M8 11V8a4 4 0 0 1 8 0v3" fill="none" stroke="currentColor" stroke-width="1.8"/></svg></span></article>
+      <article class="card locked accent-violet" id="card-batt"><h3>Température / Batterie</h3><p id="a-batt">En attente</p><span class="tag" id="t-batt">En attente d'analyse</span><svg class="spark" viewBox="0 0 100 30" aria-hidden="true"><path d="M0 18 C30 18 40 26 60 18 S85 8 100 14" fill="none" stroke="#9a6bff" stroke-width="1.6"/></svg><span class="lock" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="6" y="11" width="12" height="9" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M8 11V8a4 4 0 0 1 8 0v3" fill="none" stroke="currentColor" stroke-width="1.8"/></svg></span></article>
+    </section>
+
+    <section class="panel awakening" aria-label="Contribution">
+      <h2>DORMANT POWER AWAKENING</h2>
+      <div class="modes" role="group" aria-label="Mode de contribution">
+        <button data-mode="eco" disabled>ÉCO — 1 %</button>
+        <button data-mode="balanced" class="on" disabled>ÉQUILIBRÉ — 5 %</button>
+        <button data-mode="performance" disabled>PERFORMANCE — 10 %</button>
+      </div>
+      <p class="note">Objectifs de contribution appliqués par le worker local, pas des garanties de consommation.</p>
+      <div class="state" id="state">État : démonstration statique</div>
+      <p class="reason" id="reason">Aucun worker connecté.</p>
+      <label class="consent-line"><input type="checkbox" id="consent" disabled> Je consens à partager mes ressources dans les limites choisies.</label>
+      <button id="toggle" class="cta stop-off" disabled>DÉMARRER</button>
+      <dl class="mini">
+        <div><dt>Temps de contribution</dt><dd id="r-time">0 s</dd></div>
+        <div><dt>Tâches actives</dt><dd id="r-tasks">—</dd></div>
+        <div><dt>Protection thermique</dt><dd id="r-th">—</dd></div>
+      </dl>
+    </section>
+
+    <details class="panel diagnostics" id="diagnostics">
+      <summary>Diagnostics avancés</summary>
+    <section class="panel" aria-label="Ressources mesurées">
+      <h2>Ressources mesurées</h2>
+      <dl id="res">
+        <div><dt>CPU mesuré</dt><dd id="r-cpu">—</dd></div>
+        <div><dt>Mémoire libre</dt><dd id="r-mem">—</dd></div>
+      </dl>
+    </section>
+
+    <section class="panel" aria-label="Profil">
+      <h2>Profil NT-ID</h2>
+      <dl id="profile">
+        <div><dt>Identifiant</dt><dd id="p-id">—</dd></div>
+        <div><dt>Nom</dt><dd id="p-name">—</dd></div>
+        <div><dt>Placement autorisé</dt><dd id="p-brake">—</dd></div>
+      </dl>
+    </section>
+
+    <section class="panel" aria-label="Capacités">
+      <h2>Capacités détectées</h2>
+      <div id="caps-self">—</div>
+      <ul id="caps-peers"><li>—</li></ul>
+    </section>
+
+    <section class="panel" aria-label="Réseau">
+      <h2>Nœuds connectés (<span id="n-count">—</span>)</h2>
+      <ul id="peers"><li>—</li></ul>
+      <svg id="graph" width="100%" height="160" role="img" aria-label="Graphe du réseau"></svg>
+    </section>
+
+    <section class="panel" aria-label="Tâche">
+      <h2>Soumettre un calcul vérifié</h2>
+      <label>Preset
+        <select id="job-preset" disabled>
+          <option value="batch-fib">Lot de Fibonacci (parallèle)</option>
+          <option value="split-wordcount">Comptage de mots (découpé)</option>
+          <option value="chain-matmul">Chaîne de produits matriciels</option>
+        </select>
+      </label>
+      <label>Paramètres (JSON)
+        <textarea id="job-params" rows="3" disabled>{"ns": [20, 25]}</textarea>
+      </label>
+      <button id="job-run" class="cta small" disabled>EXÉCUTER</button>
+      <p class="reason" id="job-status"></p>
+      <div id="job-out">—</div>
+    </section>
+
+    <section class="panel" aria-label="Résultats">
+      <h2>Résultats vérifiés</h2>
+      <ul id="results"><li>—</li></ul>
+    </section>
+    </details>
+
+    <section class="panel" aria-label="iPhone et iPad">
+      <h2>Sur iPhone / iPad (Safari)</h2>
+      <p>Partager → <b>Sur l'écran d'accueil</b> pour installer. Premier plan uniquement : aucun calcul permanent en arrière-plan n'est possible ni promis sous iOS.</p>
+    </section>
   </section>
 
-  <section class="panel" aria-label="Ressources">
-    <h2>Ressources mesurées</h2>
-    <dl id="res">
-      <div><dt>CPU mesuré</dt><dd id="r-cpu">—</dd></div>
-      <div><dt>Mémoire libre</dt><dd id="r-mem">—</dd></div>
-      <div><dt>Tâches actives</dt><dd id="r-tasks">—</dd></div>
-      <div><dt>Thermique</dt><dd id="r-th">—</dd></div>
-    </dl>
-    <p class="note">En démonstration statique, ces valeurs restent à « — » : rien n'est mesuré.</p>
+  <section class="view" id="view-wallet" aria-label="Wallet">
+    <section class="panel"><h2>Wallet</h2><p class="note">Non opérationnel : aucune fonction financière n'est fournie. Aucun gain n'est promis ni affiché.</p></section>
+  </section>
+  <section class="view" id="view-vision" aria-label="Vision">
+    <section class="panel vision-hero">
+      <svg class="planet" viewBox="0 0 200 200" aria-hidden="true"><circle cx="100" cy="100" r="58" fill="#0d2138" stroke="#2fd8e8" stroke-width="2"/><ellipse cx="100" cy="100" rx="90" ry="26" fill="none" stroke="#2fe89a" stroke-width="1.4" opacity=".7"/><ellipse cx="100" cy="100" rx="26" ry="90" fill="none" stroke="#3f8cff" stroke-width="1.2" opacity=".6"/><g fill="#f2c14e"><circle cx="52" cy="72" r="3.4"/><circle cx="146" cy="64" r="3"/><circle cx="158" cy="126" r="3.4"/><circle cx="48" cy="134" r="3"/><circle cx="100" cy="42" r="3"/></g><g stroke="#9a6bff" stroke-width="1.2" opacity=".8"><path d="M52 72 L100 42 L146 64 M52 72 L48 134 L100 158 L158 126 L146 64 M100 42 L100 158" fill="none"/></g><g class="devices-orbit"><g transform="translate(100,14)"><rect x="-8" y="-6" width="16" height="11" rx="2" fill="#0d2138" stroke="#2fe89a" stroke-width="1.5"/><line x1="-4" y1="8" x2="4" y2="8" stroke="#2fe89a" stroke-width="1.5"/></g><g transform="translate(186,100)"><rect x="-5" y="-9" width="10" height="18" rx="2" fill="#0d2138" stroke="#2fd8e8" stroke-width="1.5"/><circle cx="0" cy="6" r="1.2" fill="#2fd8e8"/></g><g transform="translate(100,186)"><rect x="-9" y="-6" width="18" height="12" rx="2" fill="#0d2138" stroke="#f2c14e" stroke-width="1.5"/><path d="M-4 2h8M-2 2v4h4v-4" stroke="#f2c14e" stroke-width="1.2" fill="none"/></g></g></svg>
+      <h2 class="vision-title">Une planète. Des milliards d'appareils. Une intelligence collective.</h2>
+      <p>Et si la prochaine génération d'intelligence artificielle ne dépendait plus uniquement de gigantesques centres de données ?</p>
+      <p>Notre vision est de transformer les ressources informatiques disponibles dans le monde en une infrastructure de calcul décentralisée, accessible et intelligente.</p>
+      <p>Ordinateurs, processeurs, cartes graphiques et appareils compatibles pourraient rejoindre un réseau mondial, où chaque ressource est identifiée, sélectionnée et utilisée selon ses capacités réelles.</p>
+      <p>Avec Neuroterra, nous explorons une nouvelle manière de répartir les calculs de l'intelligence artificielle : plus flexible, plus résiliente et potentiellement plus économe en ressources.</p>
+      <p>Notre ambition : construire un réseau mondial de calcul coopératif au service de l'IA.</p>
+      <h3 class="vision-title">Notre vision</h3>
+      <p>Construire un réseau mondial de calcul décentralisé capable d'unir PC, smartphones et futurs appareils intelligents pour alimenter une IA plus verte, plus distribuée et plus accessible.</p>
+      <p>Neuroterra Genesis valorise les ressources dormantes de chaque appareil dans un cadre mesuré, consenti et vérifiable, pour transformer une puissance inutilisée en infrastructure utile.</p>
+      <p class="note">Aucune économie d'énergie ni couverture mondiale n'est présentée comme démontrée : ce sont des hypothèses à mesurer.</p>
+    </section>
+    <section class="cards vision-cards">
+      <article class="card"><h3>INTELLIGENCE DISTRIBUÉE</h3><p>Les bonnes tâches, sur les bons appareils.</p></article>
+      <article class="card"><h3>CALCUL RESPONSABLE</h3><p>Exploiter les ressources disponibles en respectant les limites énergétiques et matérielles.</p></article>
+      <article class="card"><h3>RÉSEAU RÉSILIENT</h3><p>Une infrastructure capable de s'adapter aux appareils et aux connexions.</p></article>
+    </section>
+    <button id="btn-tech" class="cta">Découvrir notre technologie</button>
+    <section class="panel" id="tech-panel" hidden>
+      <p><b>NT-UCP</b> : chaque appareil annonce des capacités réellement détectées et signées ; rien n'est inventé.</p>
+      <p><b>NeuroCore</b> : un moteur local et autonome choisit où calculer, refuse la distribution quand elle ne paie pas, et vérifie les résultats.</p>
+      <p><b>SnapMesh</b> : le réseau qui connecte les appareils volontaires, avec identités cryptographiques et consentement explicite.</p>
+    </section>
+  </section>
+  <section class="view" id="view-invest" aria-label="Invest">
+    <section class="panel"><h2>Invest</h2><p class="note">Non opérationnel : aucun produit d'investissement, aucun rendement affiché.</p></section>
+  </section>
+  <section class="view" id="view-more" aria-label="Plus">
+    <section class="panel"><h2>Wallet — Bientôt disponible</h2><p class="note">Aucune fonction financière active, aucun gain affiché.</p></section>
+    <section class="panel"><h2>Invest — Bientôt disponible</h2><p class="note">Aucun produit ni rendement. Le code existant est conservé pour intégration ultérieure.</p></section>
+    <section class="panel"><h2>Récompenses — Bientôt disponible</h2><p>À terme, Neuroterra souhaite permettre aux contributeurs d'être récompensés pour les ressources réellement mises à disposition du réseau.</p></section>
   </section>
 
-  <section class="panel" aria-label="Profil">
-    <h2>Profil NT-ID</h2>
-    <dl id="profile">
-      <div><dt>Identifiant</dt><dd id="p-id">—</dd></div>
-      <div><dt>Nom</dt><dd id="p-name">—</dd></div>
-      <div><dt>Placement autorisé</dt><dd id="p-brake">—</dd></div>
-    </dl>
-  </section>
-
-  <section class="panel" aria-label="Capacités">
-    <h2>Capacités NT-CAP</h2>
-    <div id="caps-self">—</div>
-    <ul id="caps-peers"><li>—</li></ul>
-  </section>
-
-  <section class="panel" aria-label="Réseau">
-    <h2>Nœuds connectés (<span id="n-count">—</span>)</h2>
-    <ul id="peers"><li>—</li></ul>
-    <svg id="graph" width="100%" height="160" role="img" aria-label="Graphe du réseau"></svg>
-  </section>
-
-  <section class="panel" aria-label="Tâche">
-    <h2>Soumettre un calcul vérifié</h2>
-    <label>Preset
-      <select id="job-preset" disabled>
-        <option value="batch-fib">Lot de Fibonacci (parallèle)</option>
-        <option value="split-wordcount">Comptage de mots (découpé)</option>
-        <option value="chain-matmul">Chaîne de produits matriciels</option>
-      </select>
-    </label>
-    <label>Paramètres (JSON)
-      <textarea id="job-params" rows="3" disabled>{"ns": [20, 25]}</textarea>
-    </label>
-    <button id="job-run" disabled>EXÉCUTER</button>
-    <p class="reason" id="job-status"></p>
-    <div id="job-out">—</div>
-  </section>
-
-  <section class="panel" aria-label="Résultats">
-    <h2>Résultats vérifiés</h2>
-    <ul id="results"><li>—</li></ul>
+  <section class="view" id="view-device" aria-label="Mon appareil">
+    <section class="panel" aria-label="Tableau de bord">
+      <h2>Mon appareil</h2>
+      <dl class="mini">
+        <div><dt>Nom de l'appareil</dt><dd id="dev-name">Cet appareil</dd></div>
+        <div><dt>NT-ID</dt><dd id="dev-ntid">Non disponible hors worker local</dd></div>
+        <div><dt>Système</dt><dd id="dev-os">Détection…</dd></div>
+        <div><dt>CPU</dt><dd id="dev-cpu">Lancez l'analyse depuis l'accueil</dd></div>
+        <div><dt>GPU</dt><dd id="dev-gpu">Non analysé</dd></div>
+        <div><dt>RAM</dt><dd id="dev-ram">Non analysée</dd></div>
+        <div><dt>Capacités détectées</dt><dd id="dev-caps">Lancez l'analyse depuis l'accueil</dd></div>
+        <div><dt>Contribution</dt><dd id="dev-contrib">Arrêtée</dd></div>
+        <div><dt>Réseau connecté</dt><dd id="dev-net">Vérification…</dd></div>
+        <div><dt>Pairs authentifiés</dt><dd id="dev-peers">Aucun pour l'instant</dd></div>
+      </dl>
+    </section>
+    <section class="panel" aria-label="Connexions">
+      <h2>Connexions</h2>
+      <div class="cards cx-cards">
+        <article class="card"><h3>Réseau local / Wi-Fi</h3><p id="cx-wifi">Vérification…</p></article>
+        <article class="card"><h3>Wi-Fi Direct</h3><p id="cx-wifidirect">Vérification…</p></article>
+        <article class="card"><h3>Bluetooth</h3><p id="cx-bluetooth">Vérification…</p></article>
+        <article class="card"><h3>Internet via passerelle</h3><p id="cx-gateway">Vérification…</p></article>
+      </div>
+      <button id="btn-wifidirect" class="cta small">Autoriser Wi-Fi Direct</button>
+      <button id="btn-bluetooth" class="cta small">Autoriser Bluetooth</button>
+      <button id="btn-discover" class="cta small">Rechercher des appareils</button>
+      <p class="note" id="discover-out">Aucune recherche lancée. Aucun appareil n'est inventé : seuls les pairs réellement trouvés et authentifiés apparaissent.</p>
+    </section>
+    <section class="panel" aria-label="Récompenses">
+      <h2>Récompenses — Bientôt disponible</h2>
+      <p>À terme, Neuroterra souhaite permettre aux contributeurs d'être récompensés pour les ressources réellement mises à disposition du réseau.</p>
+      <p class="note">Aucune rémunération active, aucun montant affiché.</p>
+    </section>
+    <section class="panel" aria-label="Identification">
+      <h2>Mon compte — Identification</h2>
+      <label>Nom de l'appareil <input type="text" id="set-name" autocomplete="off"></label>
+      <dl class="mini">
+        <div><dt>NT-ID local</dt><dd id="set-ntid">Non disponible hors worker local</dd></div>
+        <div><dt>Statut du worker</dt><dd id="set-worker">Aucun worker connecté</dd></div>
+      </dl>
+    </section>
+    <section class="panel" aria-label="Connectivité">
+      <h2>Connectivité</h2>
+      <label class="row"><span>Découverte locale</span><input type="checkbox" id="set-discovery" checked></label>
+      <label class="row"><span>Wi-Fi Direct</span><input type="checkbox" id="set-wifidirect" disabled></label>
+      <p class="note" id="note-wifidirect">Wi-Fi Direct : non disponible dans le navigateur.</p>
+      <label class="row"><span>Bluetooth</span><input type="checkbox" id="set-bluetooth" disabled></label>
+      <p class="note" id="note-bluetooth">Bluetooth : transport non implémenté ([RECHERCHE]).</p>
+    </section>
+    <section class="panel" aria-label="Batterie">
+      <h2>Batterie</h2>
+      <label>Auto-Stop si batterie sous <b id="batt-val">25 %</b>
+        <input type="range" id="set-batt" min="10" max="100" step="5" value="25">
+      </label>
+      <label class="row"><span>Contribuer uniquement pendant la charge</span><input type="checkbox" id="set-chargeonly"></label>
+      <p class="note" id="batt-note">Appliqué seulement si l'API batterie du navigateur répond ; sinon politique conservatrice.</p>
+    </section>
+    <section class="panel" aria-label="Protection de mon appareil">
+      <h2>Protection de mon appareil</h2>
+      <button id="btn-emergency-stop" class="cta stop">STOP d'urgence</button>
+      <p class="note" id="emergency-note">Arrête immédiatement la contribution locale. Toujours prioritaire sur tout ordonnanceur.</p>
+      <label>Limite CPU (mode de contribution, appliqué par le worker)
+        <select id="set-mode"><option value="eco">ÉCO — 1 %</option><option value="balanced" selected>ÉQUILIBRÉ — 5 %</option><option value="performance">PERFORMANCE — 10 %</option></select>
+      </label>
+      <label>Limite RAM par tâche
+        <select id="set-mem"><option value="defaut">Sandbox : 64 Mo par tâche (appliqué, non réglable ici)</option></select>
+      </label>
+      <p class="note">La borne mémoire réelle est appliquée par la sandbox du worker à chaque tâche ; elle ne se règle pas depuis le navigateur.</p>
+      <label>Limite réseau (admissions par fenêtre, liée au mode)
+        <select id="set-net"><option value="lie">Liée au mode CPU choisi (appliquée par le worker)</option></select>
+      </label>
+      <label class="row"><span>Utilisation GPU autorisée</span><input type="checkbox" id="set-gpu"></label>
+      <p class="note">Le GPU reste soumis à la détection réelle du worker ; autorisation ne crée aucune capacité.</p>
+      <label class="row"><span>Limitation thermique (garde-fou)</span><input type="checkbox" id="set-thermal" checked disabled></label>
+      <p class="note">Garde-fou matériel non désactivable. Sans mesure thermique fiable : politique conservatrice, STOP prioritaire.</p>
+      <label class="row"><span>Consentement de contribution</span><input type="checkbox" id="set-consent"></label>
+      <p class="note">Révocable à tout moment : décocher arrête la contribution locale. Préférences enregistrées sur cet appareil uniquement.</p>
+    </section>
   </section>
 </main>
+
+<nav class="tabbar" aria-label="Navigation principale">
+  <button data-nav="home" class="on"><svg viewBox="0 0 24 24"><path d="M4 11l8-7 8 7v9h-6v-5h-4v5H4z" fill="currentColor"/></svg><span>Accueil</span></button>
+  <button data-nav="vision"><svg viewBox="0 0 24 24"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6Z" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="12" r="2.6" fill="currentColor"/></svg><span>Vision</span></button>
+  <button data-nav="device"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M4 21c1.5-4 5-5.5 8-5.5s6.5 1.5 8 5.5" fill="none" stroke="currentColor" stroke-width="1.8"/></svg><span>Mon appareil</span></button>
+</nav>
+
 <script>window.__GENESIS_TOKEN__ = "__GENESIS_TOKEN__";</script>
 <script src="/app.js"></script>
 </body>

@@ -16,6 +16,15 @@ const path = require('node:path');
 const { SnapMeshNode } = require('snapmesh-mesh-net');
 const { ComputeNode } = require('snapmesh-mesh-compute');
 const { SafetyController } = require('snapmesh-mesh-safety');
+const { probeSystem, microbenchCpu } = require('snapmesh-mesh-safety/src/sysinfo');
+let hardwareCache = null;
+function hardwareInfo() {
+  if (!hardwareCache) {
+    try { hardwareCache = { ...probeSystem({}), microbench: microbenchCpu(), at: new Date().toISOString() }; }
+    catch (e) { hardwareCache = { erreur: e.message, at: new Date().toISOString() }; }
+  }
+  return hardwareCache;
+}
 const { systemTelemetry } = require('snapmesh-mesh-safety/src/telemetry');
 
 function arg(name, def = null) {
@@ -87,6 +96,7 @@ async function main() {
   await node.start();
   const GRACE_MS = Number(arg('mesh-grace-ms', '10000'));
   let emptySince = 0;
+  let hadPeers = false;
   const tick = setInterval(() => {
     const tel = systemTelemetry();
     controller.tick(tel);
@@ -97,12 +107,14 @@ async function main() {
       battery: tel.battery,
       thermal: tel.thermal,
     };
-    // Déconnexion réseau : 0 pair vivant au-delà du délai de grâce.
+    // Déconnexion réseau : perte RÉELLE seulement (un pair a déjà été vu).
+    // Un worker seul au démarrage n'est pas en panne : il attend des pairs.
     const peers = node.registry.live().length;
-    if (peers === 0) {
+    if (peers > 0) hadPeers = true;
+    if (peers === 0 && hadPeers) {
       if (!emptySince) emptySince = Date.now();
       if (Date.now() - emptySince >= GRACE_MS) controller.onMeshLost();
-    } else {
+    } else if (peers > 0) {
       emptySince = 0;
       controller.onMeshBack();
     }
@@ -130,7 +142,12 @@ async function main() {
     }));
     const attached = [...node.sockets.keys()];
     return {
-      safety: controller.status(),
+      safety: {
+        ...controller.status(),
+        workerState: controller.deriveWorkerState({ peers: peers.length, everHadPeers: hadPeers }),
+        everHadPeers: hadPeers,
+      },
+      hardware: hardwareInfo(),
       telemetry: systemTelemetry(),
       // §9 : profil NT-ID de l'appareil (id cryptographique, pas le nom).
       profile: { ntId: node.id, name: NAME, brake: brake() },

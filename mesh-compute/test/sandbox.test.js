@@ -87,6 +87,7 @@ test('sandbox : describe expose la config réelle (dont osSandbox:false)', async
 test('sandbox : shutdown rejette l\u2019en-cours et vide les slots', async () => {
   const sb = new Sandbox();
   const p = sb.run('primes', { max: 200000 });
+  p.catch(() => {}); // rejet géré dès l'émission (shutdown termine le thread)
   await sb.shutdown();
   await assert.rejects(p, /sandbox-shutdown/);
   assert.equal(sb.stats().active, 0);

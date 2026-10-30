@@ -10,6 +10,9 @@
 const ETATS = {
   STOPPED: 'arrêté', STARTING: 'démarrage', ACTIVE: 'actif',
   THERMAL_LIMIT: 'limitation thermique', SUSPENDED: 'suspendu', ERROR: 'erreur',
+  ANALYZING: 'analyse en cours', READY: 'prêt', WAITING_FOR_PEERS: 'en attente de pairs (prêt)',
+  WAITING_FOR_TASKS: 'en attente de tâches (prêt)', RUNNING: 'tâche en exécution',
+  PAUSED_SAFETY: 'pause de protection', CONNECTION_LOST: 'connexion perdue',
 };
 
 const $ = (id) => document.getElementById(id);
@@ -70,7 +73,8 @@ async function refresh() {
 
 function render(s) {
   const active = s.safety.state === 'ACTIVE' || s.safety.state === 'THERMAL_LIMIT';
-  $('state').textContent = 'État : ' + (ETATS[s.safety.state] || s.safety.state);
+  const ws = s.safety.workerState || s.safety.state;
+  $('state').textContent = 'État : ' + (ETATS[ws] || ws) + (ws === 'WAITING_FOR_PEERS' ? ' — worker disponible, aucun pair requis pour démarrer' : '');
   $('reason').textContent = s.safety.reason || '';
   toggle.textContent = active ? 'ARRÊTER' : 'DÉMARRER';
   toggle.classList.toggle('stop', active);
@@ -231,6 +235,322 @@ document.querySelectorAll('.modes button').forEach((b) => {
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1')) {
   navigator.serviceWorker.register('/sw.js').catch(() => {});
 }
+
+/* --- Refonte : navigation, analyse réelle, réglages persistants --- */
+const SETTINGS_KEY = 'genesis-settings-v1';
+const settings = (() => {
+  try { return JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}'); } catch { return {}; }
+})();
+function saveSettings() {
+  try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)); } catch { /* stockage refusé : session seulement */ }
+}
+
+document.querySelectorAll('[data-nav]').forEach((b) => {
+  b.addEventListener('click', () => {
+    const name = b.dataset.nav;
+    document.querySelectorAll('.view').forEach((v) => v.classList.toggle('on', v.id === `view-${name}`));
+    document.querySelectorAll('.tabbar button').forEach((x) => x.classList.toggle('on', x.dataset.nav === name));
+    window.scrollTo(0, 0);
+  });
+});
+const notifBtn = $('btn-notifs');
+if (notifBtn) notifBtn.addEventListener('click', () => {
+  const r = $('reason');
+  if (r) r.textContent = 'Notifications : aucun événement. Les états réels du worker apparaissent ici en mode local.';
+});
+
+function setCard(cardId, valId, tagId, value, tag) {
+  const card = $(cardId);
+  if (card) card.classList.remove('locked');
+  if ($(valId)) $(valId).textContent = value;
+  if ($(tagId)) $(tagId).textContent = tag;
+}
+
+let batteryRef = null;
+async function analyzeDevice() {
+  const status = $('analyze-status');
+  if (!$('an-consent') || !$('an-consent').checked) {
+    status.textContent = 'Consentement requis : cochez l\u2019autorisation d\u2019analyse.';
+    return;
+  }
+  status.textContent = 'Analyse locale en cours…';
+  const cores = navigator.hardwareConcurrency || null;
+  setCard('card-cpu', 'a-cpu', 't-cpu', cores ? `${cores} cœurs logiques` : 'Non disponible', cores ? 'Détecté (navigateur)' : 'Non disponible');
+  let gpuTxt = 'Non disponible';
+  let gpuTag = 'Non disponible';
+  try {
+    if (navigator.gpu) {
+      const adapter = await navigator.gpu.requestAdapter();
+      if (adapter) { gpuTxt = 'WebGPU présent (adaptateur répond)'; gpuTag = 'Détecté (WebGPU)'; }
+    }
+  } catch { /* WebGPU refusé : Non disponible conservé */ }
+  const mem = navigator.deviceMemory ? ` · RAM ≈ ${navigator.deviceMemory} Go (navigateur)` : '';
+  setCard('card-gpu', 'a-gpu', 't-gpu', gpuTxt + mem, gpuTag);
+  const conn = navigator.connection || {};
+  let netTxt = conn.effectiveType ? `Type ${conn.effectiveType}` : 'Non disponible';
+  try {
+    const t0 = performance.now();
+    await fetch('/styles.css', { cache: 'no-store' });
+    const ms = Math.max(1, performance.now() - t0);
+    netTxt += ` · ressource locale en ${ms.toFixed(0)} ms`;
+  } catch { /* ressource non joignable : type seul */ }
+  setCard('card-net', 'a-net', 't-net', netTxt, conn.effectiveType ? 'Estimé (navigateur)' : 'Non disponible');
+  let battTxt = 'Non disponible (thermique non exposée)';
+  let battTag = 'Non disponible';
+  try {
+    if (navigator.getBattery) {
+      batteryRef = await navigator.getBattery();
+      battTxt = `Batterie ${Math.round(batteryRef.level * 100)} %${batteryRef.charging ? ' (en charge)' : ''} · température non disponible`;
+      battTag = 'Mesuré (batterie)';
+    }
+  } catch { /* API batterie refusée */ }
+  setCard('card-batt', 'a-batt', 't-batt', battTxt, battTag);
+  if (LOCAL) {
+    try {
+      const s = await (await fetch('/api/state')).json();
+      const c = (s.caps && s.caps.self) || {};
+      const cpu = c.cpu || {};
+      if (cpu.threads) setCard('card-cpu', 'a-cpu', 't-cpu', `${cpu.threads} threads · ${cpu.arch || ''}`, 'Mesuré (worker local)');
+      const hw = s.hardware || {};
+      const val = (f) => (hw[f] && hw[f].valeur !== null && hw[f].valeur !== undefined ? hw[f].valeur : null);
+      if (val('cpuModele')) setCard('card-cpu', 'a-cpu', 't-cpu', `${val('cpuModele')} · ${val('cpuLogiques') || cpu.threads || '?'} logiques${val('cpuPhysiques') ? ` · ${val('cpuPhysiques')} physiques` : ''}${hw.microbench && hw.microbench.valeur ? ` · microbench ${hw.microbench.valeur.gflops} Gflops` : ''}`, 'Mesuré (système local)');
+      if (val('gpuModele')) setCard('card-gpu', 'a-gpu', 't-gpu', `${val('gpuModele')}${val('vramGo') ? ` · VRAM déclarée ${val('vramGo')} Go` : ''}`, 'Détecté (système local)');
+      if (hw.batterie && hw.batterie.valeur) setCard('card-batt', 'a-batt', 't-batt', `Batterie ${hw.batterie.valeur.pct} % · température non disponible`, 'Mesuré (système local)');
+      if ($('set-ntid') && s.profile) $('set-ntid').textContent = String(s.profile.ntId).slice(0, 24) + '…';
+      if ($('set-worker')) $('set-worker').textContent = s.safety ? (ETATS[s.safety.state] || s.safety.state) : 'Connecté';
+    } catch {
+      status.textContent = 'Analyse navigateur terminée ; worker local injoignable.';
+      return;
+    }
+  }
+  status.textContent = LOCAL
+    ? 'Analyse terminée (navigateur + worker local). Vous pouvez DÉMARRER.'
+    : 'Analyse terminée (navigateur seul). Aucun worker connecté : START reste désactivé.';
+  // Après succès, l'analyse redevient une action secondaire de relance.
+  if (analyzeBtn) {
+    analyzeBtn.classList.add('secondary');
+    const label = analyzeBtn.querySelector('span:nth-child(2)');
+    if (label) label.textContent = 'Relancer l\u2019analyse de votre appareil';
+  }
+}
+
+const analyzeBtn = $('analyze-btn');
+if (analyzeBtn) analyzeBtn.addEventListener('click', analyzeDevice);
+
+// Temps de contribution : accumulé seulement quand l'état affiché est actif.
+let contribSec = Number(settings.contribSec || 0);
+setInterval(() => {
+  const st = $('state');
+  const running = !!(st && /actif|limitation|exécution/.test(st.textContent));
+  document.body.classList.toggle('contributing', running);
+  if (running) {
+    contribSec++;
+    settings.contribSec = contribSec;
+    if (contribSec % 5 === 0) saveSettings();
+    const el = $('r-time');
+    if (el) el.textContent = contribSec >= 60 ? `${Math.floor(contribSec / 60)} min ${contribSec % 60} s` : `${contribSec} s`;
+  }
+}, 1000);
+
+// Réglages persistants + garde batterie réelle (si API disponible).
+function bindSettings() {
+  const name = $('set-name');
+  if (!name) return;
+  name.value = settings.deviceName || '';
+  name.addEventListener('change', () => { settings.deviceName = name.value; saveSettings(); });
+  const batt = $('set-batt');
+  batt.value = String(settings.battStop ?? 25);
+  $('batt-val').textContent = `${batt.value} %`;
+  batt.addEventListener('input', () => {
+    settings.battStop = Number(batt.value);
+    $('batt-val').textContent = `${batt.value} %`;
+    saveSettings();
+  });
+  const chargeOnly = $('set-chargeonly');
+  chargeOnly.checked = !!settings.chargeOnly;
+  chargeOnly.addEventListener('change', () => { settings.chargeOnly = chargeOnly.checked; saveSettings(); });
+  const gpu = $('set-gpu');
+  gpu.checked = !!settings.gpuAllowed;
+  gpu.addEventListener('change', () => { settings.gpuAllowed = gpu.checked; saveSettings(); });
+  const disc = $('set-discovery');
+  disc.checked = settings.discovery !== false;
+  disc.addEventListener('change', () => { settings.discovery = disc.checked; saveSettings(); });
+  const consentSet = $('set-consent');
+  consentSet.checked = !!settings.consent;
+  consentSet.addEventListener('change', async () => {
+    settings.consent = consentSet.checked;
+    saveSettings();
+    const mainConsent = $('consent');
+    if (mainConsent) mainConsent.checked = consentSet.checked;
+    if (!consentSet.checked && LOCAL) {
+      try { await call('/api/stop', { reason: 'consentement révoqué (réglages)' }); await refresh(); } catch { /* état conservé */ }
+    }
+  });
+  const modeSel = $('set-mode');
+  modeSel.value = settings.mode || 'balanced';
+  modeSel.addEventListener('change', async () => {
+    settings.mode = modeSel.value;
+    saveSettings();
+    if (LOCAL) {
+      try { await call('/api/mode', { mode: modeSel.value }); await refresh(); } catch { /* état conservé */ }
+    }
+  });
+  // Garde batterie : appliquée uniquement avec mesure réelle disponible.
+  setInterval(async () => {
+    if (!batteryRef) {
+      try { if (navigator.getBattery) batteryRef = await navigator.getBattery(); } catch { /* toujours indisponible */ }
+      if (!batteryRef) return;
+    }
+    const seuil = Number(settings.battStop ?? 25);
+    const low = batteryRef.level * 100 < seuil && !batteryRef.charging;
+    const chargeBlock = settings.chargeOnly && !batteryRef.charging;
+    if ((low || chargeBlock) && LOCAL) {
+      const st = await (await fetch('/api/state')).json().catch(() => null);
+      if (st && (st.safety.state === 'ACTIVE' || st.safety.state === 'THERMAL_LIMIT')) {
+        await call('/api/stop', { reason: low ? 'batterie faible (garde réglages)' : 'charge requise (réglages)' });
+        await refresh();
+        const note = $('batt-note');
+        if (note) note.textContent = 'Garde batterie appliquée : contribution arrêtée (mesure réelle).';
+      }
+    }
+  }, 30000);
+}
+bindSettings();
+
+/* --- Adaptateurs de capacités (statuts réels, jamais simulés) --- */
+const IOSAdapter = {
+  isIOS() { return /iphone|ipad|ipod/i.test(navigator.userAgent || ''); },
+  standalone() { return window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true; },
+  limits() { return 'PWA iOS : premier plan uniquement, aucun calcul permanent en arrière-plan, Wi-Fi Direct et Web Bluetooth non annoncés'; },
+};
+const AndroidAdapter = {
+  isAndroid() { return /android/i.test(navigator.userAgent || ''); },
+  limits() { return 'PWA Android : capacités selon le navigateur, aucun accès natif supposé'; },
+};
+const techBtn = $('btn-tech');
+if (techBtn) techBtn.addEventListener('click', () => {
+  const panel = $('tech-panel');
+  if (panel) panel.hidden = !panel.hidden;
+});
+const emergencyBtn = $('btn-emergency-stop');
+if (emergencyBtn) emergencyBtn.addEventListener('click', async () => {
+  const note = $('emergency-note');
+  if (!LOCAL) { if (note) note.textContent = 'Aucun worker connecté : rien à arrêter (aucun arrêt simulé).'; return; }
+  try {
+    await call('/api/stop', { reason: 'STOP d\u2019urgence (Mon appareil)' });
+    await refresh();
+    if (note) note.textContent = 'STOP d\u2019urgence appliqué par le worker local.';
+  } catch { if (note) note.textContent = 'STOP demandé mais worker injoignable : vérifiez l\u2019état dans Diagnostics avancés.'; }
+});
+
+const BrowserAdapter = {
+  wifi() { return navigator.onLine ? 'Actif (navigateur en ligne)' : 'Désactivé (navigateur hors ligne)'; },
+  bluetoothSupported() { return !!navigator.bluetooth; },
+  wifiDirect() { return 'Non compatible (aucune API navigateur)'; },
+  os() { return navigator.platform || 'Non disponible'; },
+};
+const WindowsWorkerAdapter = {
+  async caps() {
+    if (!LOCAL) return null;
+    try { return await (await fetch('/api/state')).json(); } catch { return null; }
+  },
+};
+const NetworkTransportAdapter = {
+  async gateway() {
+    try {
+      const r = await fetch('/.netlify/functions/gateway');
+      if (!r.ok) return 'Erreur (passerelle injoignable)';
+      const j = await r.json();
+      return j.nodesLive === null ? 'Disponible (aucun nœud réel branché)' : 'Actif';
+    } catch { return 'Non disponible hors hébergement passerelle'; }
+  },
+};
+
+async function refreshDevice() {
+  if ($('dev-os')) $('dev-os').textContent = BrowserAdapter.os()
+    + (IOSAdapter.isIOS() ? ` · iPhone/iPad (${IOSAdapter.standalone() ? 'PWA installée' : 'Safari'}) — ${IOSAdapter.limits()}`
+      : AndroidAdapter.isAndroid() ? ` · Android — ${AndroidAdapter.limits()}` : '');
+  if ($('dev-name')) $('dev-name').textContent = settings.deviceName || 'Cet appareil';
+  if ($('dev-cpu') && $('a-cpu')) $('dev-cpu').textContent = $('a-cpu').textContent;
+  if ($('dev-gpu') && $('a-gpu')) $('dev-gpu').textContent = $('a-gpu').textContent;
+  if ($('dev-ram')) $('dev-ram').textContent = navigator.deviceMemory ? `≈ ${navigator.deviceMemory} Go (navigateur, estimé)` : 'Non disponible via le navigateur';
+  if ($('cx-wifi')) $('cx-wifi').textContent = BrowserAdapter.wifi();
+  if ($('dev-net')) $('dev-net').textContent = BrowserAdapter.wifi();
+  if ($('cx-bluetooth')) $('cx-bluetooth').textContent = BrowserAdapter.bluetoothSupported()
+    ? 'Autorisation nécessaire (action explicite)' : 'Non compatible (Web Bluetooth absent)';
+  if ($('cx-wifidirect')) $('cx-wifidirect').textContent = BrowserAdapter.wifiDirect();
+  if ($('cx-gateway')) $('cx-gateway').textContent = await NetworkTransportAdapter.gateway();
+  const s = await WindowsWorkerAdapter.caps();
+  if (s) {
+    if ($('dev-ntid') && s.profile) $('dev-ntid').textContent = String(s.profile.ntId).slice(0, 24) + '…';
+    const hw = s.hardware || {};
+    if (hw.cpuModele && hw.cpuModele.valeur && $('dev-cpu')) $('dev-cpu').textContent = `${hw.cpuModele.valeur} · ${hw.cpuLogiques.valeur} logiques`;
+    if (hw.gpuModele && $('dev-gpu')) $('dev-gpu').textContent = hw.gpuModele.valeur || 'Non disponible (sonde système)';
+    if (hw.ramTotaleGo && hw.ramTotaleGo.valeur && $('dev-ram')) $('dev-ram').textContent = `${hw.ramTotaleGo.valeur} Go au total · ${hw.ramLibreGo.valeur} Go libres (mesuré)`;
+    if ($('dev-caps')) $('dev-caps').textContent = $('a-cpu') ? $('a-cpu').textContent : 'Worker local connecté';
+    if ($('dev-contrib')) $('dev-contrib').textContent = ETATS[s.safety.workerState || s.safety.state] || s.safety.state;
+    const peers = s.mesh.peers || [];
+    if ($('dev-peers')) $('dev-peers').textContent = peers.length
+      ? peers.map((p) => `${p.name} (${p.sessionVerified ? 'authentifié' : 'non vérifié'})`).join(', ')
+      : 'Aucun pour l\u2019instant';
+    if ($('cx-wifidirect')) {
+      const transports = ((s.caps.self || {}).net || {}).transports || ['tcp-ip'];
+      const wd = (s.hardware || {}).wifiDirect || {};
+      if (transports.includes('wifi-direct')) $('cx-wifidirect').textContent = 'Actif (transport worker annoncé)';
+      else if (wd.statut === 'détecté') $('cx-wifidirect').textContent = `Disponible (pilote) — ${wd.valeur} ; transport worker non implémenté`;
+      else $('cx-wifidirect').textContent = 'Non compatible — Wi-Fi Direct non disponible sur cet appareil.';
+    }
+    if ($('cx-wifi')) $('cx-wifi').textContent = peers.length ? 'Actif (pairs connectés)' : 'Disponible (aucun pair, prêt)';
+  }
+}
+refreshDevice();
+
+const wdBtn = $('btn-wifidirect');
+if (wdBtn) wdBtn.addEventListener('click', async () => {
+  const out = $('discover-out');
+  const s = await WindowsWorkerAdapter.caps();
+  if (!s) { out.textContent = 'Wi-Fi Direct non disponible sur cet appareil (aucun worker local ; le navigateur ne propose pas cette API).'; return; }
+  const transports = ((s.caps.self || {}).net || {}).transports || [];
+  out.textContent = transports.includes('wifi-direct')
+    ? 'Wi-Fi Direct annoncé par le worker : suivez l\u2019appairage système Windows.'
+    : 'Wi-Fi Direct non disponible sur cet appareil (le worker n\u2019annonce que TCP/IP). Aucun réglage système n\u2019a été modifié.';
+});
+const btBtn = $('btn-bluetooth');
+if (btBtn) btBtn.addEventListener('click', async () => {
+  const out = $('discover-out');
+  if (!navigator.bluetooth) {
+    out.textContent = 'Bluetooth non compatible ici (Web Bluetooth absent, cas Safari iOS). Aucune connexion simulée.';
+    if ($('cx-bluetooth')) $('cx-bluetooth').textContent = 'Non compatible';
+    return;
+  }
+  try {
+    const dev = await navigator.bluetooth.requestDevice({ acceptAllDevices: true });
+    if ($('cx-bluetooth')) $('cx-bluetooth').textContent = `Appareil sélectionné : ${dev.name || 'sans nom'} (découvert, pas encore authentifié NT)`;
+    out.textContent = 'Appareil Bluetooth découvert par le sélecteur système. Appairage et authentification NT-ID restent requis avant tout statut Connecté.';
+  } catch {
+    out.textContent = 'Autorisation Bluetooth refusée ou sélection annulée : aucun appareil connecté.';
+    if ($('cx-bluetooth')) $('cx-bluetooth').textContent = 'Autorisation nécessaire (refusée)';
+  }
+});
+const discBtn = $('btn-discover');
+if (discBtn) discBtn.addEventListener('click', async () => {
+  const out = $('discover-out');
+  out.textContent = 'Recherche sur les interfaces réellement disponibles…';
+  await refreshDevice();
+  const s = await WindowsWorkerAdapter.caps();
+  if (!s) {
+    out.textContent = 'Découverte réseau non disponible dans ce navigateur seul : ouvrez l\u2019application locale Windows pour rechercher des pairs authentifiés. Aucun appareil trouvé ni inventé.';
+    return;
+  }
+  const peers = s.mesh.peers || [];
+  if (!peers.length) {
+    out.textContent = 'Interfaces vérifiées (Wi-Fi/IP local principal). Recherche terminée : aucun pair authentifié trouvé. Le worker reste prêt (ce n\u2019est pas une panne). Appairage volontaire : démarrez le worker du second appareil vers ce coordinateur (procédure Mon appareil).';
+    return;
+  }
+  out.innerHTML = `Interfaces vérifiées. ${peers.length} pair(s) réellement trouvé(s) :<br>`
+    + peers.map((p) => `${esc(p.name)} — identité NT ${p.sessionVerified ? 'vérifiée (signature de session)' : 'NON vérifiée'} — état ${esc(p.state)}`).join('<br>')
+    + '<br>Seuls les pairs à session vérifiée sont enregistrés comme authentifiés.';
+});
 
 if (!LOCAL) {
   applyDemoMode();

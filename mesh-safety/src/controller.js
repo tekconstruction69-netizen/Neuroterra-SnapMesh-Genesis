@@ -40,11 +40,38 @@ class SafetyController {
     this.meshSuspended = false;
   }
 
-  setTargets({ cpuTarget, workers, concurrent } = {}) {
-    if (cpuTarget !== undefined && (cpuTarget <= 0 || cpuTarget > 0.5)) {
-      throw new Error('cible-cpu-invalide (0..50 % max)');
+  /**
+   * Réglages utilisateur : refus strict de toute valeur invalide.
+   * Règles : cpuTarget ∈ ]0, 0.50] fini ; workers/concurrent entiers
+   * finis dans [1, 64] ; champs fournis valant undefined/null/NaN/
+   * Infinity/chaîne/booléen/objet rejetés ; clés inconnues rejetées ;
+   * aucun réglage ne dépasse les plafonds (CPU ≤ 50 %, jamais 0).
+   */
+  setTargets(input = {}) {
+    if (!input || typeof input !== 'object' || Array.isArray(input)) {
+      throw new Error('cibles-invalides: objet requis');
     }
-    Object.assign(this.targets, { cpuTarget, workers, concurrent });
+    const allowed = new Set(['cpuTarget', 'workers', 'concurrent']);
+    for (const k of Object.keys(input)) {
+      if (!allowed.has(k)) throw new Error(`cible-inconnue: ${k}`);
+    }
+    const finiteNumber = (v) => typeof v === 'number' && Number.isFinite(v);
+    const out = {};
+    if ('cpuTarget' in input) {
+      const v = input.cpuTarget;
+      if (!finiteNumber(v) || v <= 0 || v > 0.5) throw new Error('cible-cpu-invalide (0 exclu..50 % max, fini requis)');
+      out.cpuTarget = v;
+    }
+    for (const k of ['workers', 'concurrent']) {
+      if (k in input) {
+        const v = input[k];
+        if (!finiteNumber(v) || !Number.isInteger(v) || v < 1 || v > 64) {
+          throw new Error(`cible-${k}-invalide (entier fini 1..64 requis)`);
+        }
+        out[k] = v;
+      }
+    }
+    Object.assign(this.targets, out);
   }
 
   /** START : consentement explicite + préconditions vérifiées. */
@@ -105,6 +132,26 @@ class SafetyController {
 
   untrack(id) {
     this.tasks.delete(id);
+  }
+
+  /**
+   * État de travail dérivé (9 états produit) depuis l'état safety réel.
+   * Un worker seul n'est PAS en panne : WAITING_FOR_PEERS. SUSPENDED ne
+   * devient CONNECTION_LOST que si un pair a déjà été vu (perte réelle) ;
+   * les pauses de protection restent PAUSED_SAFETY.
+   */
+  deriveWorkerState({ peers = 0, everHadPeers = false } = {}) {
+    if (this.state === 'STOPPED') return 'STOPPED';
+    if (this.state === 'ERROR') return 'ERROR';
+    if (this.state === 'STARTING') return 'ANALYZING';
+    if (this.state === 'THERMAL_LIMIT') return this.tasks.size ? 'RUNNING' : 'PAUSED_SAFETY';
+    if (this.state === 'SUSPENDED') {
+      return /thermique|batterie|mémoire/.test(this.stateReason) ? 'PAUSED_SAFETY' : 'CONNECTION_LOST';
+    }
+    // ACTIVE
+    if (this.tasks.size > 0) return 'RUNNING';
+    void everHadPeers;
+    return peers > 0 ? 'WAITING_FOR_TASKS' : 'WAITING_FOR_PEERS';
   }
 
   /** Réseau maillé perdu : suspend sans arrêter (STOP reste distinct). */

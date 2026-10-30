@@ -58,6 +58,13 @@ class Sandbox {
   }
 
   run(op, args) {
+    if (this.shuttingDown) {
+      this.counters.refused++;
+      return Object.assign(
+        Promise.reject(new SandboxError('shutdown', 'bac à sable arrêté')),
+        { cancel: () => false }
+      );
+    }
     if (this.active.size >= this.maxWorkers) {
       this.counters.busy++;
       return Object.assign(
@@ -148,16 +155,25 @@ class Sandbox {
     return Object.assign(promise, { cancel });
   }
 
-  /** Arrêt global : tue tout, rejette l'en-cours (`sandbox-shutdown`). */
-  async shutdown() {
+  /** Arrêt global : tue réellement tout worker, rejette l'en-cours (`sandbox-shutdown`). */
+  async shutdown({ terminateTimeoutMs = 2000 } = {}) {
+    this.shuttingDown = true; // toute nouvelle exécution est refusée
     const err = new SandboxError('shutdown', 'arrêt du bac à sable');
+    const kills = [];
     for (const [, e] of this.active) {
       if (e.settled) continue;
       e.settled = true;
       clearTimeout(e.timer);
+      try { kills.push(e.worker.terminate()); } catch { kills.push(Promise.resolve(0)); }
       e.reject(err);
     }
     this.active.clear();
+    // Attente bornée de la terminaison réelle des threads.
+    await Promise.race([
+      Promise.allSettled(kills),
+      new Promise((r) => setTimeout(r, Math.max(100, terminateTimeoutMs))),
+    ]);
+    return { stopped: true, killed: kills.length };
   }
 }
 
